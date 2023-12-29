@@ -53,6 +53,19 @@ int read_status(Uss_Sensor_Id_t tSensorMask, uint16 *u16StatusData)
 	return (int)UssDrivers_Status_Read(tSensorMask, u16StatusData);
 }
 
+/******************************************************************************
+;       Function Name           :   int write_meas(uint16 sensor_mask, uss_meas_data_t meas_data[12])
+;       Function Description    :
+;       Parameters              :   [Uss_Sensor_Id_t tSensorMask]   - Sensors ID
+;                                   [uint16 *u16StatusData]         - USS status
+;       Return Values           :   0 = Success
+;                                   1 = Failure
+;       Description             :   Ex. read_status(USS_ID_IO1_TXRX_FLC, &u16Status)
+******************************************************************************/
+int write_meas(uint16 sensor_mask, Uss_Meas_Data_t *tMeasSetupPara)
+{
+    return (int)UssDrivers_Meas_Para_Write(sensor_mask, tMeasSetupPara);
+}
 
 //---------------------------------------------------------------------------//
 

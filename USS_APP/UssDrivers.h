@@ -56,7 +56,7 @@ enum UssCmdsSize{
 	SIZE_USS_SENSOR = 12,		// USS_SENSOR_SIDE_MASK_x
 	SIZE_THRES_THVAL = 12,
 	SIZE_CALIB_WRITE = 5,		// CW_BYTEx
-
+	SIZE_MEAS_WRITE = 5,
 	SIZE_USS_RX_RAW = 80,
 	SIZE_TIME_TAG = 60,
 	SIZE_USS_RX = 3
@@ -65,7 +65,7 @@ enum UssCmdsSize{
 enum UssCmdsLen{
 	LEN_THRES_SETUP_BITS = 74,
 	LEN_CALIB_WRITE_BITS = 34,
-
+	LEN_MEAS_WRITE_BITS = 39,
 	LEN_EE_READ = 35
 };
 
@@ -274,6 +274,48 @@ enum THVALNumber{
 	NUM_THVAL_12 = 10,
 	NUM_THVAL_13 = 11
 };
+//---------------- Meas_WRITE Command ---------------------//
+//  Bytes of transmitted data for 'MEAS_WRITE' command
+enum MEASPacketBytes{
+	MEAS_BYTE0 = 0,
+	MEAS_BYTE1 = 1,
+	MEAS_BYTE2 = 2,
+	MEAS_BYTE3 = 3,
+	MEAS_BYTE4 = 4,
+};
+// Bits of transmitted data for 'MEAS_WRITE' command
+enum MEASBitsMask{
+	// MEAS_BYTE0
+	MASK_MEAS_B0_PARITY_2			= 0x01, 		
+	MASK_MEAS_B0_PARITY_1			= 0x02, 		
+	MASK_MEAS_B0_PARITY_0			= 0x04, 		
+	MASK_MEAS_B0_FILTER_CFG			= 0x08, 
+	MASK_MEAS_B0_NOISE_CFG			= 0x30, 		
+	MASK_MEAS_B0_STC_START      	= 0xC0, 
+	// MEAS_BYTE1
+	MASK_MEAS_B1_STC_CFG            = 0x03,
+	MASK_MEAS_B1_EPD                = 0x04,
+	MASK_MEAS_B1_FTC                = 0x08,
+	MASK_MEAS_B1_NFTG               = 0x10,
+	MASK_MEAS_B1_RT_CFG             = 0x20,
+	MASK_MEAS_B1_ECHO_DEB           = 0x40,
+	MASK_MEAS_B1_THRESSCALE_C_L     = 0x80,
+	// MEAS_BYTE2
+	MASK_MEAS_B2_THRESSCALE_C_H     = 0x01,
+	MASK_MEAS_B2_TMEAS_C            = 0x0E,
+	MASK_MEAS_B2_NPULSES_C          = 0x70,
+	MASK_MEAS_B2_THRESSCALE_B_L     = 0x80,
+	// MEAS_BYTE3
+	MASK_MEAS_B3_THRESSCALE_B_H     = 0x01,
+	MASK_MEAS_B3_TMEAS_B            = 0x0E,
+	MASK_MEAS_B3_NPULSES_B          = 0x70,
+	MASK_MEAS_B3_THRESSCALE_A_L     = 0x80,
+	// MEAS_BYTE4
+	MASK_MEAS_B4_THRESSCALE_A_H     = 0x01,
+	MASK_MEAS_B4_TMEAS_A            = 0x0E,
+	MASK_MEAS_B4_NPULSES_A          = 0X70
+}; // 20231228 ADD BY KU
+
 //---------------- CALIB_WRITE Command --------------------//
 //  Bytes of transmitted data for 'CALIB_WRITE' command
 enum CalibWritePacketBytes{
@@ -416,7 +458,10 @@ typedef enum{
 	PC_PARITY_3 = 1,
 	PC_PARITY_2 = 2,
 	PC_PARITY_1 = 3,
-	PC_PARITY_0 = 4
+	PC_PARITY_0 = 4,
+    PC_MEAS_PARITY_2 = 0,
+    PC_MEAS_PARITY_1 = 1,
+    PC_MEAS_PARITY_0 = 2
 } ParityChk_Num_t;
 
 typedef enum{
@@ -448,6 +493,28 @@ typedef struct
 
 typedef struct
 {
+	uint8 u8npulses_a;
+	uint8 u8tmeas_a;
+	uint8 u8thresscale_a;
+	uint8 u8npulses_b;
+	uint8 u8tmeas_b;
+	uint8 u8thresscale_b;
+	uint8 u8npulses_c;
+	uint8 u8tmeas_c;
+	uint8 u8thresscale_c;
+	uint8 u8echo_deb;
+	uint8 u8rt_cfg;
+	uint8 u8nftg;
+	uint8 u8ftc;
+	uint8 u8epd;
+	uint8 u8stc_cfg;
+	uint8 u8stc_start;
+	uint8 u8noise_cfg;
+	uint8 u8filter_cfg;
+}Uss_Meas_Data_t;
+
+typedef struct
+{
 	uint8 u8Osc_Trim;
 	uint8 u8Customer_Bits;
 	uint8 u8G_Dig;
@@ -475,6 +542,7 @@ typedef struct
 } Uss_Rx_Ack_Data_t;
 //--------------------------- Extern Support --------------------------------//
 extern Uss_Thres_Data_t gtUssThresSetupPara[SIZE_USS_SENSOR];
+extern Uss_Meas_Data_t gtUssMeasData[SIZE_USS_SENSOR]; // 20231228 ADD BY KU
 extern Uss_Calib_Data_t gtUssCalibWritePara[SIZE_USS_SENSOR];
 extern uint32 gu32InvertHighPulseTemp[SIZE_USS_RX_RAW];
 extern uint32 gu32TimeTagTemp[SIZE_TIME_TAG];
@@ -489,6 +557,7 @@ extern void UssDrivers_Init(void);
 extern void UssDrivers_IO_Symbol_Signal(Uss_Sensor_Id_t tSensorMask, uint8 u8Symbol);
 extern void UssDrivers_Cmds_Transmit(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8Cmd);
 extern Func_Status_t UssDrivers_ThresSetup_Para_Write(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresSetupPara);
+extern Func_Status_t UssDrivers_Meas_Para_Write(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Data_t *tThresSetupPara);
 extern uint8 UssDrivers_ParityBit_Calculate(ParityChkMode_t tMode, uint32 u32Values);
 extern Func_Status_t UssDrivers_Calib_Write(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibWritePara);
 extern void UssDrivers_Rx_Data_Parse(boolean bFlag);

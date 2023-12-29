@@ -15,6 +15,7 @@
 extern int write_threshold(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresSetupPara);
 extern int write_calibration(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibWritePara);
 extern int read_status(Uss_Sensor_Id_t tSensorMask, uint16 *u16StatusData);
+extern int write_meas(uint16 sensor_mask, Uss_Meas_Data_t *tMeasSetupPara);
 #endif
 
 
