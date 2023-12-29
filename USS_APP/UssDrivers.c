@@ -3,7 +3,7 @@
 ;       Function	:	USS (Ultrasonic Sensor System) Function
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2023 / 12 / 28
+;       Date		:	2023 / 12 / 29
 ;       Author		:	Fenderson Lu
 ;       Describe	: 	USS_TX_1 = USS_IO_TX1 (P15.2)
 ;						USS_RX_1 = USS_IO_RX1 (P15.8)
@@ -755,7 +755,7 @@ static uint8 UssDrivers_Parity_Check(ParityChk_Num_t tParityNum)
 	return UssDrivers_ParityBit_Calculate(MODE_PC_EVEN, u16UssParityBitCal);
 }
 //---------------------------------------------------------------------------//
-uint8 UssDrivers_Meas_Parity_Check(ParityChk_Num_t tParityNum)
+uint8 UssDrivers_Meas_Parity_Check(ParityChk_Num_MEAS_t tParityNum)
 {
 	uint16 u16UssParityBitCal = INIT_PARITY_BITS;
 

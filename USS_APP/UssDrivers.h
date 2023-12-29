@@ -3,7 +3,7 @@
 ;       Function	: Declare USS Drivers Function & Variable
 ;       Chip		: Infineon TC397
 ;       Clock		: Internal SYSPLL 300MHz
-;       Date		: 2023 / 12 / 28
+;       Date		: 2023 / 12 / 29
 ;       Author		: Fenderson Lu
 ******************************************************************************/
 #ifndef __USSDRIVERS_H__
@@ -458,11 +458,14 @@ typedef enum{
 	PC_PARITY_3 = 1,
 	PC_PARITY_2 = 2,
 	PC_PARITY_1 = 3,
-	PC_PARITY_0 = 4,
+	PC_PARITY_0 = 4
+} ParityChk_Num_t;
+
+typedef enum{
     PC_MEAS_PARITY_2 = 0,
     PC_MEAS_PARITY_1 = 1,
     PC_MEAS_PARITY_0 = 2
-} ParityChk_Num_t;
+} ParityChk_Num_MEAS_t;
 
 typedef enum{
 	FUNC_SUCCESS = 0,
