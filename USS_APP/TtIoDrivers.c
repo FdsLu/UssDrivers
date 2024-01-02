@@ -3,7 +3,7 @@
 ;       Function	:	APIs transfer to TT API format
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2023 / 12 / 21
+;       Date		:	2023 / 1 / 2
 ;       Author		:	Fenderson Lu
 ;		Description	:	
 ******************************************************************************/
@@ -15,7 +15,7 @@
 //---------------------------- Start Program --------------------------------//
 /******************************************************************************
 ;       Function Name			:	int write_threshold(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresSetupPara)
-;       Function Description	:	
+;       Function Description	:	Send and set threshold setup parameters
 ;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]		- Sensors ID
 ;									[Uss_Thres_Data_t *tThresSetupPara]	- Threshold setup parameters
 ;       Return Values			:	0 = FUNC_SUCCESS
@@ -28,7 +28,7 @@ int write_threshold(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresSetupPa
 
 /******************************************************************************
 ;       Function Name			:	int write_calibration(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibWritePara)
-;       Function Description	:	
+;       Function Description	:	Send and set calibration parameters
 ;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]		- Sensors ID
 ;									[Uss_Calib_Data_t *tCalibWritePara]	- Calibration write parameters
 ;       Return Values			:	0 = FUNC_SUCCESS
@@ -41,7 +41,7 @@ int write_calibration(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibWrite
 
 /******************************************************************************
 ;       Function Name			:	int read_status(Uss_Sensor_Id_t tSensorMask, uint16 *u16StatusData)
-;       Function Description	:	
+;       Function Description	:	Read sensors status
 ;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]	- Sensors ID
 ;									[uint16 *u16StatusData]			- USS status
 ;       Return Values			:	0 = Success
@@ -67,6 +67,36 @@ int write_meas(uint16 sensor_mask, Uss_Meas_Data_t *tMeasSetupPara)
     return (int)UssDrivers_Meas_Para_Write(sensor_mask, tMeasSetupPara);
 }
 
+/******************************************************************************
+;       Function Name			:	int uss_detect(Uss_Detect_Mode_t tMode, uint16 u16SendMask, uint16 u16RecMask, uint16 u16DetTime_us)
+;       Function Description	:	Range measurement
+;       Parameters				:	[Uss_Detect_Mode_t tMode]	- Command mode selection
+;									[uint16 u16SendMask]		- Choose send sensor
+;									[uint16 u16RecMask]			- Choose receive sensor
+;									[uint16 u16DetTime_us]		- Sensor ACK time length
+;       Return Values			:	0 = Success
+;									1 = Failure
+;		Description				:	Ex. uss_detect(MODE_SEND_REC_C, 0x0002, 0x0000, 36000);
+******************************************************************************/
+int uss_detect(Uss_Detect_Mode_t tMode, uint16 u16SendMask, uint16 u16RecMask, uint16 u16DetTime_us)
+{
+	return (int)UssDrivers_SndRecEnv_Detect(tMode, u16SendMask, u16RecMask, u16DetTime_us);
+}
+
+/******************************************************************************
+;       Function Name			:	int read_bilateral_time(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRecEnv tCmd, uint32 *u32BilateralT)
+;       Function Description	:	Read sensors bilateral time
+;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]	- Sensors ID
+;									[Uss_Cmds_SendRecEnv tCmd]		- Choose command
+;									[uint32 *u32BilateralT]			- read and store bilateral time of command
+;       Return Values			:	0 = Success
+;									1 = Failure
+;		Description				:	Ex. read_bilateral_time(USS_ID_IO2_TXRX_FLM, CMDS_SEND_C, &gu32Buffer[0])
+******************************************************************************/
+int read_bilateral_time(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRecEnv tCmd, uint32 *u32BilateralT)
+{
+	return	(int)UssDrivers_Bilat_Get(tSensorMask, tCmd, u32BilateralT);
+}
 //---------------------------------------------------------------------------//
 
 

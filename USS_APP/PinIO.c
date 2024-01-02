@@ -3,7 +3,7 @@
 ;       Function	: 	GPIO sensing
 ;       Chip		: 	Infineon TC397
 ;       Clock		: 	Internal SYSPLL 300MHz
-;       Date		: 	2023 / 12 / 27
+;       Date		: 	2023 / 1 / 2
 ;       Author		: 	Fenderson Lu
 ;       Describe	: 	ERU interrupt pins
 ;						(1) USS_IO_RX1 = 
@@ -41,7 +41,6 @@ void SCUERU_Int0_Handler(void)
 				if(Common_Down_Counter(&gu32StartTimeTag))
 				{
 					Timer_Gtm_RealTimer_Clear();
-					
 					gu32TagStartT = Timer_Gtm_RealTimer_Get();
 					gu32PreTagStartT = gu32TagStartT;		
 					gu32TimeTagTemp[gu8RxAckIndex++] = gu32TagStartT - gu32PreTagStartT;
@@ -54,12 +53,9 @@ void SCUERU_Int0_Handler(void)
 				}
 				
 				// Receive data finish check
-				#if EVB_DEMO
 				if(gu32TagTotalT >= UssDrivers_DetectTimeLen_Get())				
-				#else
-				if(gu32TagStartT >= UssDrivers_RxAckLen_Get())				
-				#endif
 				{
+					UssDrivers_RxTagTCnt_Set(gu8RxAckIndex-1);
 					gu32TagTotalT = 0;
 					gu8RxAckIndex = 0;
 					gu32TagStartT = 0;
@@ -171,6 +167,10 @@ void PinIO_PeripheralsAndERU_Init(void)
 	IfxScuEru_setInterruptGatingPattern(gtEruIsrConfig.outputChannel, IfxScuEru_InterruptGatingPattern_alwaysActive);	// Configure Output channels, OutputGating Unit OGU (Register IGPy) 
 	
 	gtEruIsrConfig.src = &MODULE_SRC.SCU.SCUERU[(int) gtEruIsrConfig.outputChannel % 4];	// Service request configuration, Get source pointer depending on outputChannel (SRC_SCUERU0 for outputChannel0) 
+
+
+	IfxScuEru_enableInputFilter(IfxScuEru_InputFilterRequestSelection_7A);		// enable reqUSS_IO_RX2 pin filter
+		
  	IfxSrc_init(gtEruIsrConfig.src, IfxSrc_Tos_cpu0, ISR_ERU_PRIORITY);
 	IfxSrc_enable(gtEruIsrConfig.src);
 }

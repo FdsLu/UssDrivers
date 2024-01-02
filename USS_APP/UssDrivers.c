@@ -3,7 +3,7 @@
 ;       Function	:	USS (Ultrasonic Sensor System) Function
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2023 / 12 / 29
+;       Date		:	2023 / 1 / 2
 ;       Author		:	Fenderson Lu
 ;       Describe	: 	USS_TX_1 = USS_IO_TX1 (P15.2)
 ;						USS_RX_1 = USS_IO_RX1 (P15.8)
@@ -37,7 +37,7 @@ uint32 gu32TxFilterLen;
 uint32 gu32UssRxBitsTemp[SIZE_USS_RX];
 boolean gbUssRxFinishFlag, gbUssRxAckEnFlag;
 boolean gbAckRecFinishFlag = FALSE;
-
+uint32 gu32RxTagTCnt;
 
 
 Uss_Exchange_Cmds gu8UssTxCmd;
@@ -57,18 +57,18 @@ uint16 gu16SendMask;
 // Bit14	: Reserved 
 // Bit13	: Reserved
 // Bit12	: Reserved
-// Bit11	: 1 = USS rlc sensor is called send command. 
-// Bit10	: 1 = USS rlm sensor is called send command. 
-// Bit9		: 1 = USS rrm sensor is called send command. 
-// Bit8		: 1 = USS rrc sensor is called send command. 
-// Bit7		: 1 = USS frc sensor is called send command. 
-// Bit6		: 1 = USS frm sensor is called send command. 
-// Bit5		: 1 = USS flm sensor is called send command. 
-// Bit4		: 1 = USS flc sensor is called send command. 
-// Bit3		: 1 = USS rrs sensor is called send command. 
-// Bit2		: 1 = USS frs sensor is called send command. 
-// Bit1		: 1 = USS rls sensor is called send command. 
-// Bit0		: 1 = USS fls sensor is called send command. 
+// Bit11	: 1 = USS IO12 rrs sensor is called transmitted command. 
+// Bit10	: 1 = USS IO11 rls sensor is called transmitted command. 
+// Bit9		: 1 = USS IO10 frs sensor is called transmitted command. 
+// Bit8		: 1 = USS IO9 fls sensor is called transmitted command. 
+// Bit7		: 1 = USS IO8 rrm sensor is called transmitted command. 
+// Bit6		: 1 = USS IO7 rrc sensor is called transmitted command. 
+// Bit5		: 1 = USS IO6 rlm sensor is called transmitted command. 
+// Bit4		: 1 = USS IO5 rlc sensor is called transmitted command. 
+// Bit3		: 1 = USS IO4 frm sensor is called transmitted command. 
+// Bit2		: 1 = USS IO3 frc sensor is called transmitted command. 
+// Bit1		: 1 = USS IO2 flm sensor is called transmitted command. 
+// Bit0		: 1 = USS IO1 flc sensor is called transmitted command. 
 //--------------------------------------------------------------//
 
 uint16 gu16RecMask;
@@ -77,23 +77,19 @@ uint16 gu16RecMask;
 // Bit14	: Reserved 
 // Bit13	: Reserved
 // Bit12	: Reserved
-// Bit11	: 1 = USS rlc sensor is called receive command. 
-// Bit10	: 1 = USS rlm sensor is called receive command. 
-// Bit9		: 1 = USS rrm sensor is called receive command. 
-// Bit8		: 1 = USS rrc sensor is called receive command. 
-// Bit7		: 1 = USS frc sensor is called receive command. 
-// Bit6		: 1 = USS frm sensor is called receive command. 
-// Bit5		: 1 = USS flm sensor is called receive command. 
-// Bit4		: 1 = USS flc sensor is called receive command. 
-// Bit3		: 1 = USS rrs sensor is called receive command. 
-// Bit2		: 1 = USS frs sensor is called receive command. 
-// Bit1		: 1 = USS rls sensor is called receive command. 
-// Bit0		: 1 = USS fls sensor is called receive command. 
+// Bit11	: 1 = USS IO12 rrs sensor is called receivable command. 
+// Bit10	: 1 = USS IO11 rls sensor is called receivable command. 
+// Bit9		: 1 = USS IO10 frs sensor is called receivable command. 
+// Bit8		: 1 = USS IO9 fls sensor is called receivable command. 
+// Bit7		: 1 = USS IO8 rrm sensor is called receivable command. 
+// Bit6		: 1 = USS IO7 rrc sensor is called receivable command. 
+// Bit5		: 1 = USS IO6 rlm sensor is called receivable command. 
+// Bit4		: 1 = USS IO5 rlc sensor is called receivable command. 
+// Bit3		: 1 = USS IO4 frm sensor is called receivable command. 
+// Bit2		: 1 = USS IO3 frc sensor is called receivable command. 
+// Bit1		: 1 = USS IO2 flm sensor is called receivable command. 
+// Bit0		: 1 = USS IO1 flc sensor is called receivable command. 
 //--------------------------------------------------------------//
-
-
-
-
 
 #if EVB_DEMO
 uint8 gu8LowPulseTemp[SIZE_USS_RX_RAW];
@@ -188,10 +184,13 @@ void UssDrivers_IO_Symbol_Signal(Uss_Sensor_Id_t tSensorMask, uint8 u8Symbol)
 		case IO_SYM_T_SND:
 			#if EVB_DEMO
 			IfxPort_setPinLow(gtUssIoPort[tSensorMask], gu8UssIoPin[tSensorMask]);
+			Common_Delay(UNIT_MICRO, (uint32)(SYM_TIME_T_SND * TIME_GAP));
+			IfxPort_setPinHigh(gtUssIoPort[tSensorMask], gu8UssIoPin[tSensorMask]);
 			#else
 			IfxPort_setPinHigh(gtUssIoPort[tSensorMask], gu8UssIoPin[tSensorMask]);
-			#endif
 			Common_Delay(UNIT_MICRO, (uint32)(SYM_TIME_T_SND * TIME_GAP));		
+			IfxPort_setPinLow(gtUssIoPort[tSensorMask], gu8UssIoPin[tSensorMask]);			
+			#endif
 		break;
 		case IO_SYM_T_REC:
 			#if EVB_DEMO
@@ -261,16 +260,11 @@ void UssDrivers_Cmds_Transmit(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 			
 			gbUssRxAckEnFlag = TRUE;			
-			
-			#if EVB_DEMO
-			gu32DetectTimeLen = 2320;						// 2ms for test
-			gu32UssRxAckLen = ACK_BITS_LEN_SEND_A;		
-			#else			
-			gu32DetectTimeLen = 2320;						//FDS: need link to API?????
-			gu32UssRxAckLen = ACK_BITS_LEN_SEND_A;
-			#endif
-
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_SND);
+
+
+			
+
 
 			#if EVB_DEMO
 			// Sensor ACK				
@@ -300,14 +294,6 @@ void UssDrivers_Cmds_Transmit(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 			
 			gbUssRxAckEnFlag = TRUE;
-
-			#if EVB_DEMO
-			gu32DetectTimeLen = 2320;						// 2ms for test
-			gu32UssRxAckLen = ACK_BITS_LEN_RECEIVE_A;		
-			#else			
-			gu32DetectTimeLen = 2320;						//FDS: need link to API?????
-			gu32UssRxAckLen = ACK_BITS_LEN_RECEIVE_A;
-			#endif		
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_REC);			
 		break;
 		case EX_CMDS_SEND_B:		// ACK
@@ -316,16 +302,6 @@ void UssDrivers_Cmds_Transmit(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 			
 			gbUssRxAckEnFlag = TRUE;
-
-			#if EVB_DEMO
-			gu32DetectTimeLen = 2320;						// 2ms for test
-			gu32UssRxAckLen = ACK_BITS_LEN_SEND_B;		
-			#else			
-			gu32DetectTimeLen = 2320;						//FDS: need link to API?????
-			gu32UssRxAckLen = ACK_BITS_LEN_SEND_B;
-			#endif	
-
-			
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_MEAS);
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_D);
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
@@ -337,16 +313,6 @@ void UssDrivers_Cmds_Transmit(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 			
 			gbUssRxAckEnFlag = TRUE;
-
-			#if EVB_DEMO
-			gu32DetectTimeLen = 2320;						// 2ms for test
-			gu32UssRxAckLen = ACK_BITS_LEN_RECEIVE_B;		
-			#else			
-			gu32DetectTimeLen = 2320;						//FDS: need link to API?????
-			gu32UssRxAckLen = ACK_BITS_LEN_RECEIVE_B;
-			#endif
-
-			
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_MEAS);
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_D);
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT0_LOG_0);
@@ -358,16 +324,6 @@ void UssDrivers_Cmds_Transmit(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 			
 			gbUssRxAckEnFlag = TRUE;
-
-
-			#if EVB_DEMO
-			gu32DetectTimeLen = 2320;						// 2ms for test
-			gu32UssRxAckLen = ACK_BITS_LEN_SEND_C;		
-			#else			
-			gu32DetectTimeLen = 2320;						//FDS: need link to API?????
-			gu32UssRxAckLen = ACK_BITS_LEN_SEND_C;
-			#endif
-			
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_MEAS);
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_D);
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);			
@@ -379,17 +335,6 @@ void UssDrivers_Cmds_Transmit(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 			
 			gbUssRxAckEnFlag = TRUE;
-
-
-			#if EVB_DEMO
-			gu32DetectTimeLen = 2320;						// 2ms for test
-			gu32UssRxAckLen = ACK_BITS_LEN_RECEIVE_C;		
-			#else			
-			gu32DetectTimeLen = 2320;						//FDS: need link to API?????
-			gu32UssRxAckLen = ACK_BITS_LEN_RECEIVE_C;
-			#endif
-
-			
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_MEAS);
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_D);
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT0_LOG_0);
@@ -966,8 +911,6 @@ Func_Status_t UssDrivers_Calib_Write(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data
 	return FUNC_SUCCESS;		
 }
 //---------------------------------------------------------------------------//
-
-//int read_status(uint8 sensor_idx, uint16 *status_data);
 Func_Status_t UssDrivers_Status_Read(Uss_Sensor_Id_t tSensorMask, uint16 *u16StatusData)
 {
     Func_Status_t Status = FUNC_FAIL;
@@ -985,13 +928,112 @@ Func_Status_t UssDrivers_Status_Read(Uss_Sensor_Id_t tSensorMask, uint16 *u16Sta
 
 	return Status;
 }
-
-
-void UssDrivers_Cmds_SendRecC_Send(uint16 u16Mask, Uss_Cmds_SendRec u8SendRecCmd)
+//---------------------------------------------------------------------------//
+void UssDrivers_Cmds_SedRecEnv_Send(uint16 u16Mask, Uss_Cmds_SendRecEnv tCmds)
 {
-	switch(u8SendRecCmd)
+	switch(tCmds)
 	{
-		case CMDS_SEND_X:
+		case CMDS_SEND_A:
+			if((u16Mask & 0x0001) == MASK_IO1_FLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO1_TXRX_FLC, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0002) == MASK_IO2_FLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0004) == MASK_IO3_FRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO3_TXRX_FRC, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0008) == MASK_IO4_FRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO4_TXRX_FRM, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0010) == MASK_IO5_RLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO5_TXRX_RLC, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0020) == MASK_IO6_RLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO6_TXRX_RLM, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0040) == MASK_IO7_RRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO7_TXRX_RRC, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0080) == MASK_IO8_RRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO8_TXRX_RRM, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0100) == MASK_IO9_FLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO9_TXRX_FLS, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0200) == MASK_IO10_FRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO10_TXRX_FRS, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0400) == MASK_IO11_RLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO11_TXRX_RLS, EX_CMDS_SEND_A);		
+			}
+			if((u16Mask & 0x0800) == MASK_IO12_RRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO12_TXRX_RRS, EX_CMDS_SEND_A);		
+			}			
+		break;
+		case CMDS_SEND_B:
+			if((u16Mask & 0x0001) == MASK_IO1_FLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO1_TXRX_FLC, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0002) == MASK_IO2_FLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0004) == MASK_IO3_FRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO3_TXRX_FRC, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0008) == MASK_IO4_FRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO4_TXRX_FRM, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0010) == MASK_IO5_RLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO5_TXRX_RLC, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0020) == MASK_IO6_RLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO6_TXRX_RLM, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0040) == MASK_IO7_RRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO7_TXRX_RRC, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0080) == MASK_IO8_RRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO8_TXRX_RRM, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0100) == MASK_IO9_FLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO9_TXRX_FLS, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0200) == MASK_IO10_FRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO10_TXRX_FRS, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0400) == MASK_IO11_RLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO11_TXRX_RLS, EX_CMDS_SEND_B);		
+			}
+			if((u16Mask & 0x0800) == MASK_IO12_RRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO12_TXRX_RRS, EX_CMDS_SEND_B);		
+			}	
+		break;
+		case CMDS_SEND_C:
 			if((u16Mask & 0x0001) == MASK_IO1_FLC)
 			{
 				UssDrivers_Cmds_Transmit(USS_ID_IO1_TXRX_FLC, EX_CMDS_SEND_C);		
@@ -1040,64 +1082,343 @@ void UssDrivers_Cmds_SendRecC_Send(uint16 u16Mask, Uss_Cmds_SendRec u8SendRecCmd
 			{
 				UssDrivers_Cmds_Transmit(USS_ID_IO12_TXRX_RRS, EX_CMDS_SEND_C);		
 			}			
+		break;			
+		case CMDS_REC_A:
+			if((u16Mask & 0x0001) == MASK_IO1_FLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO1_TXRX_FLC, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0002) == MASK_IO2_FLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0004) == MASK_IO3_FRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO3_TXRX_FRC, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0008) == MASK_IO4_FRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO4_TXRX_FRM, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0010) == MASK_IO5_RLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO5_TXRX_RLC, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0020) == MASK_IO6_RLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO6_TXRX_RLM, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0040) == MASK_IO7_RRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO7_TXRX_RRC, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0080) == MASK_IO8_RRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO8_TXRX_RRM, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0100) == MASK_IO9_FLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO9_TXRX_FLS, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0200) == MASK_IO10_FRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO10_TXRX_FRS, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0400) == MASK_IO11_RLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO11_TXRX_RLS, EX_CMDS_RECEIVE_A);		
+			}
+			if((u16Mask & 0x0800) == MASK_IO12_RRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO12_TXRX_RRS, EX_CMDS_RECEIVE_A);		
+			}					
 		break;
-		case CMDS_REC_X:
+		case CMDS_REC_B:
+			if((u16Mask & 0x0001) == MASK_IO1_FLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO1_TXRX_FLC, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0002) == MASK_IO2_FLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0004) == MASK_IO3_FRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO3_TXRX_FRC, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0008) == MASK_IO4_FRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO4_TXRX_FRM, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0010) == MASK_IO5_RLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO5_TXRX_RLC, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0020) == MASK_IO6_RLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO6_TXRX_RLM, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0040) == MASK_IO7_RRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO7_TXRX_RRC, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0080) == MASK_IO8_RRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO8_TXRX_RRM, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0100) == MASK_IO9_FLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO9_TXRX_FLS, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0200) == MASK_IO10_FRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO10_TXRX_FRS, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0400) == MASK_IO11_RLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO11_TXRX_RLS, EX_CMDS_RECEIVE_B);		
+			}
+			if((u16Mask & 0x0800) == MASK_IO12_RRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO12_TXRX_RRS, EX_CMDS_RECEIVE_B);		
+			}				
+		break;		
+		case CMDS_REC_C:
+			if((u16Mask & 0x0001) == MASK_IO1_FLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO1_TXRX_FLC, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0002) == MASK_IO2_FLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0004) == MASK_IO3_FRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO3_TXRX_FRC, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0008) == MASK_IO4_FRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO4_TXRX_FRM, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0010) == MASK_IO5_RLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO5_TXRX_RLC, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0020) == MASK_IO6_RLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO6_TXRX_RLM, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0040) == MASK_IO7_RRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO7_TXRX_RRC, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0080) == MASK_IO8_RRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO8_TXRX_RRM, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0100) == MASK_IO9_FLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO9_TXRX_FLS, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0200) == MASK_IO10_FRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO10_TXRX_FRS, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0400) == MASK_IO11_RLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO11_TXRX_RLS, EX_CMDS_RECEIVE_C);		
+			}
+			if((u16Mask & 0x0800) == MASK_IO12_RRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO12_TXRX_RRS, EX_CMDS_RECEIVE_C);		
+			}								
+		break;
+		case CMDS_ENVELOPE_SEND_A:
+			if((u16Mask & 0x0001) == MASK_IO1_FLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO1_TXRX_FLC, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0002) == MASK_IO2_FLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0004) == MASK_IO3_FRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO3_TXRX_FRC, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0008) == MASK_IO4_FRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO4_TXRX_FRM, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0010) == MASK_IO5_RLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO5_TXRX_RLC, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0020) == MASK_IO6_RLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO6_TXRX_RLM, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0040) == MASK_IO7_RRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO7_TXRX_RRC, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0080) == MASK_IO8_RRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO8_TXRX_RRM, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0100) == MASK_IO9_FLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO9_TXRX_FLS, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0200) == MASK_IO10_FRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO10_TXRX_FRS, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0400) == MASK_IO11_RLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO11_TXRX_RLS, EX_CMDS_ENVELOPE_SEND_A);		
+			}
+			if((u16Mask & 0x0800) == MASK_IO12_RRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO12_TXRX_RRS, EX_CMDS_ENVELOPE_SEND_A);		
+			}						
+		break;
+		case CMDS_ENVELOPE_REC_A:
+			if((u16Mask & 0x0001) == MASK_IO1_FLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO1_TXRX_FLC, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0002) == MASK_IO2_FLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0004) == MASK_IO3_FRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO3_TXRX_FRC, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0008) == MASK_IO4_FRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO4_TXRX_FRM, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0010) == MASK_IO5_RLC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO5_TXRX_RLC, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0020) == MASK_IO6_RLM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO6_TXRX_RLM, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0040) == MASK_IO7_RRC)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO7_TXRX_RRC, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0080) == MASK_IO8_RRM)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO8_TXRX_RRM, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0100) == MASK_IO9_FLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO9_TXRX_FLS, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0200) == MASK_IO10_FRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO10_TXRX_FRS, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0400) == MASK_IO11_RLS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO11_TXRX_RLS, EX_CMDS_ENVELOPE_REC_A);		
+			}
+			if((u16Mask & 0x0800) == MASK_IO12_RRS)
+			{
+				UssDrivers_Cmds_Transmit(USS_ID_IO12_TXRX_RRS, EX_CMDS_ENVELOPE_REC_A);		
+			}								
 		break;
 	}
-
 }
-
-//int uss_detect(uint8 mode,uint16 send_mask, uint16 receive_mask, uint16 detect_time);
-Func_Status_t UssDrivers_Uss_Detect(Uss_Detect_Mode_t tMode, uint16 u16SendMask, uint16 u16RecMask, uint16 u16DetTime)
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_SndRecEnv_Detect(Uss_Detect_Mode_t tMode, uint16 u16SendMask, uint16 u16RecMask, uint16 u16DetTime_us)
 {
 	gu16SendMask = u16SendMask;
 	gu16RecMask = u16RecMask;
-	gu32DetectTimeLen = u16DetTime;
+	gu32DetectTimeLen = u16DetTime_us;
 	(void)(gu32DetectTimeLen);
 
 	switch(tMode)
 	{
 		case MODE_SEND_REC_A:
+			UssDrivers_Cmds_SedRecEnv_Send(gu16SendMask, CMDS_SEND_A);
+			Common_Delay(UNIT_MILLI, 1);	
+			UssDrivers_Cmds_SedRecEnv_Send(gu16RecMask, CMDS_REC_A);	
+			Common_Delay(UNIT_MILLI, 1);	
 		break;
 		case MODE_SEND_REC_B:
+			UssDrivers_Cmds_SedRecEnv_Send(gu16SendMask, CMDS_SEND_B);
+			Common_Delay(UNIT_MILLI, 1);
+			UssDrivers_Cmds_SedRecEnv_Send(gu16RecMask, CMDS_REC_B);	
+			Common_Delay(UNIT_MILLI, 1);
 		break;
 		case MODE_SEND_REC_C:
-			UssDrivers_Cmds_SendRecC_Send(gu16SendMask, CMDS_SEND_X);
-			UssDrivers_Cmds_SendRecC_Send(gu16RecMask, CMDS_REC_X);
-
-		
+			UssDrivers_Cmds_SedRecEnv_Send(gu16SendMask, CMDS_SEND_C);
+			//Common_Delay(UNIT_MILLI, 1);
+			//UssDrivers_Cmds_SedRecEnv_Send(gu16RecMask, CMDS_REC_C);	
+			//Common_Delay(UNIT_MILLI, 1);
 		break;
 		case MODE_ENVELOPE:
+			UssDrivers_Cmds_SedRecEnv_Send(gu16SendMask, CMDS_ENVELOPE_SEND_A);
+			Common_Delay(UNIT_MILLI, 1);
+			UssDrivers_Cmds_SedRecEnv_Send(gu16RecMask, CMDS_ENVELOPE_REC_A);
+			Common_Delay(UNIT_MILLI, 1);
 		break;
 	}
 
 	return FUNC_SUCCESS;
 }
-
-//int read_bilateral_time(uint8 sensor_idx, uin32 *bilateral_time);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Bilat_Get(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRecEnv tCmd, uint32 *u32BilateralT)
+{
+	switch(tCmd)
+	{
+		case CMDS_SEND_A:
+			for(uint32 u32Index=0; u32Index<SIZE_SND_REC; u32Index++)
+				u32BilateralT[u32Index] = gtUssRxAckData[tSensorMask].u32SendAT[u32Index];			
+		break;
+		case CMDS_SEND_B:
+			for(uint32 u32Index=0; u32Index<SIZE_SND_REC; u32Index++)
+				u32BilateralT[u32Index] = gtUssRxAckData[tSensorMask].u32SendBT[u32Index];	
+		break;
+		case CMDS_SEND_C:
+			for(uint32 u32Index=0; u32Index<SIZE_SND_REC; u32Index++)
+				u32BilateralT[u32Index] = gtUssRxAckData[tSensorMask].u32SendCT[u32Index];	
+		break;
+		case CMDS_REC_A:
+			for(uint32 u32Index=0; u32Index<SIZE_SND_REC; u32Index++)
+				u32BilateralT[u32Index] = gtUssRxAckData[tSensorMask].u32ReceiveAT[u32Index];				
+		break;
+		case CMDS_REC_B:
+			for(uint32 u32Index=0; u32Index<SIZE_SND_REC; u32Index++)
+				u32BilateralT[u32Index] = gtUssRxAckData[tSensorMask].u32ReceiveBT[u32Index];			
+		break;
+		case CMDS_REC_C:
+			for(uint32 u32Index=0; u32Index<SIZE_SND_REC; u32Index++)
+				u32BilateralT[u32Index] = gtUssRxAckData[tSensorMask].u32ReceiveCT[u32Index];			
+		break;
+		case CMDS_ENVELOPE_SEND_A:
+			// Reserved, No ACK		
+		break;
+		case CMDS_ENVELOPE_REC_A:
+			// Reserved, No ACK
+		break;		
+	}
+	
+	return FUNC_SUCCESS;
+}
 //---------------------------------------------------------------------------//
 void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8Cmd)
 {
 	switch(u8Cmd)
 	{
 		case EX_CMDS_SEND_A:
-			for(uint32 u32Index=0; u32Index<gu32UssRxAckLen; u32Index++)
+			for(uint32 u32Index=0; u32Index<gu32RxTagTCnt; u32Index++)
 			{
 				gtUssRxAckData[tSensorMask].u32SendAT[u32Index] = gu32TimeTagTemp[u32Index];
 			}
@@ -1107,7 +1428,7 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 		break;
 		case EX_CMDS_RECEIVE_A:
-			for(uint32 u32Index=0; u32Index<gu32UssRxAckLen; u32Index++)
+			for(uint32 u32Index=0; u32Index<gu32RxTagTCnt; u32Index++)
 			{
 				gtUssRxAckData[tSensorMask].u32ReceiveAT[u32Index] = gu32TimeTagTemp[u32Index];
 			}	
@@ -1117,7 +1438,7 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 		break;
 		case EX_CMDS_SEND_B:
-			for(uint32 u32Index=0; u32Index<gu32UssRxAckLen; u32Index++)
+			for(uint32 u32Index=0; u32Index<gu32RxTagTCnt; u32Index++)
 			{
 				gtUssRxAckData[tSensorMask].u32SendBT[u32Index] = gu32TimeTagTemp[u32Index];
 			}	
@@ -1127,7 +1448,7 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 		break;
 		case EX_CMDS_RECEIVE_B:
-			for(uint32 u32Index=0; u32Index<gu32UssRxAckLen; u32Index++)
+			for(uint32 u32Index=0; u32Index<gu32RxTagTCnt; u32Index++)
 			{
 				gtUssRxAckData[tSensorMask].u32ReceiveBT[u32Index] = gu32TimeTagTemp[u32Index];
 			}	
@@ -1137,7 +1458,7 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 		break;
 		case EX_CMDS_SEND_C:
-			for(uint32 u32Index=0; u32Index<gu32UssRxAckLen; u32Index++)
+			for(uint32 u32Index=0; u32Index<gu32RxTagTCnt; u32Index++)
 			{
 				gtUssRxAckData[tSensorMask].u32SendCT[u32Index] = gu32TimeTagTemp[u32Index];
 			}	
@@ -1147,7 +1468,7 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			#endif
 		break;
 		case EX_CMDS_RECEIVE_C:
-			for(uint32 u32Index=0; u32Index<gu32UssRxAckLen; u32Index++)
+			for(uint32 u32Index=0; u32Index<gu32RxTagTCnt; u32Index++)
 			{
 				gtUssRxAckData[tSensorMask].u32ReceiveCT[u32Index] = gu32TimeTagTemp[u32Index];
 			}	
@@ -1252,12 +1573,13 @@ void UssDrivers_Rx_Data_Parse(boolean bFlag)
 		if((gu8UssTxCmd >= EX_CMDS_SEND_A) && (gu8UssTxCmd <= EX_CMDS_RECEIVE_C))
 		{	
 			// Record tag time
+			gu32UssRxAckLen = gu32RxTagTCnt;
 			UssDrivers_Rx_Data_Store(tUssSensorId, gu8UssTxCmd);
 			memset(&gu32TimeTagTemp, VAL_INIT, sizeof(gu32TimeTagTemp));							// Clear buffer
 			//Common_Buffer_Clear(&gu32TimeTagTemp[0], sizeof(gu32TimeTagTemp)/sizeof(uint32));		// Clear buffer
 
 			gu32DetectTimeLen = VAL_INIT;
-			//gu32UssRxAckLen = VAL_INIT;
+			gu32UssRxAckLen = VAL_INIT;
 		}
 		else
 		{
@@ -1372,6 +1694,36 @@ uint32 UssDrivers_DetectTimeLen_Get(void)
 void UssDrivers_DetectTimeLen_Set(uint32 u32DetTLen)
 {
 	gu32DetectTimeLen = u32DetTLen;
+}
+//---------------------------------------------------------------------------//
+uint16 UssDrivers_SendMask_Get(void)
+{
+	return gu16SendMask;
+}
+//---------------------------------------------------------------------------//
+void UssDrivers_SendMask_Set(uint16 u16SndMask)
+{
+	gu16SendMask = u16SndMask;
+}
+//---------------------------------------------------------------------------//
+uint16 UssDrivers_RecMask_Get(void)
+{
+	return gu16RecMask;
+}
+//---------------------------------------------------------------------------//
+void UssDrivers_RecMask_Set(uint16 u16RecMask)
+{
+	gu16RecMask = u16RecMask;
+}
+//---------------------------------------------------------------------------//
+uint32 UssDrivers_RxTagTCnt_Get(void)
+{
+	return gu32RxTagTCnt;
+}
+//---------------------------------------------------------------------------//
+void UssDrivers_RxTagTCnt_Set(uint32 u32Cnt)
+{
+	gu32RxTagTCnt = u32Cnt;
 }
 //---------------------------------------------------------------------------//
 

@@ -3,7 +3,7 @@
 ;       Function	: Declare USS Drivers Function & Variable
 ;       Chip		: Infineon TC397
 ;       Clock		: Internal SYSPLL 300MHz
-;       Date		: 2023 / 12 / 29
+;       Date		: 2023 / 1 / 2
 ;       Author		: Fenderson Lu
 ******************************************************************************/
 #ifndef __USSDRIVERS_H__
@@ -59,7 +59,8 @@ enum UssCmdsSize{
 	SIZE_MEAS_WRITE = 5,
 	SIZE_USS_RX_RAW = 80,
 	SIZE_TIME_TAG = 60,
-	SIZE_USS_RX = 3
+	SIZE_USS_RX = 3,
+	SIZE_SND_REC = 128
 };
 
 enum UssCmdsLen{
@@ -480,9 +481,15 @@ typedef enum{
 } Uss_Detect_Mode_t;
 
 typedef enum{
-	CMDS_SEND_X,
-	CMDS_REC_X
-} Uss_Cmds_SendRec;
+	CMDS_SEND_A,
+	CMDS_SEND_B,
+	CMDS_SEND_C,
+	CMDS_REC_A,
+	CMDS_REC_B,
+	CMDS_REC_C,
+	CMDS_ENVELOPE_SEND_A,
+	CMDS_ENVELOPE_REC_A	
+} Uss_Cmds_SendRecEnv;
 
 typedef struct
 {
@@ -529,12 +536,12 @@ typedef struct
 
 typedef struct
 {
-	uint32 u32SendAT[ACK_BITS_LEN_SEND_A];
-	uint32 u32ReceiveAT[ACK_BITS_LEN_RECEIVE_A];
-	uint32 u32SendBT[ACK_BITS_LEN_SEND_B];
-	uint32 u32ReceiveBT[ACK_BITS_LEN_RECEIVE_B];
-	uint32 u32SendCT[ACK_BITS_LEN_SEND_C];
-	uint32 u32ReceiveCT[ACK_BITS_LEN_RECEIVE_C];
+	uint32 u32SendAT[SIZE_SND_REC];
+	uint32 u32ReceiveAT[SIZE_SND_REC];
+	uint32 u32SendBT[SIZE_SND_REC];
+	uint32 u32ReceiveBT[SIZE_SND_REC];
+	uint32 u32SendCT[SIZE_SND_REC];
+	uint32 u32ReceiveCT[SIZE_SND_REC];
 	uint32 u32ReadThresSetup[ACK_U32_LEN_READ_THRES_SETUP];
 	uint32 u32ReadMeasSetup[ACK_U32_LEN_READ_MEAS_SETUP];
 	uint32 u32ReadStatus;
@@ -578,6 +585,15 @@ extern boolean UssDrivers_AckRecFinishFlag_Get(void);
 extern void UssDrivers_AckRecFinishFlag_Set(boolean bSwitch);
 extern uint32 UssDrivers_DetectTimeLen_Get(void);
 extern void UssDrivers_DetectTimeLen_Set(uint32 u32DetTLen);
+extern uint16 UssDrivers_SendMask_Get(void);
+extern void UssDrivers_SendMask_Set(uint16 u16SndMask);
+extern uint16 UssDrivers_RecMask_Get(void);
+extern void UssDrivers_RecMask_Set(uint16 u16RecMask);
+extern Func_Status_t UssDrivers_SndRecEnv_Detect(Uss_Detect_Mode_t tMode, uint16 u16SendMask, uint16 u16RecMask, uint16 u16DetTime_us);
+extern void UssDrivers_Cmds_SedRecEnv_Send(uint16 u16Mask, Uss_Cmds_SendRecEnv tCmds);
+extern uint32 UssDrivers_RxTagTCnt_Get(void);
+extern void UssDrivers_RxTagTCnt_Set(uint32 u32Cnt);
+extern Func_Status_t UssDrivers_Bilat_Get(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRecEnv tCmd, uint32 *u32BilateralT);
 #endif
 
 

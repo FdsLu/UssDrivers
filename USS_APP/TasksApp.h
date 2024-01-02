@@ -3,7 +3,7 @@
 ;       Function	: Declare TasksApp Function & Variable
 ;       Chip		: Infineon TC397
 ;       Clock		: Internal SYSPLL 300MHz
-;       Date		: 2023 / 12 / 26
+;       Date		: 2023 / 1 / 2
 ;       Author		: Fenderson Lu
 ******************************************************************************/
 #ifndef __TASKSAPP_H__
@@ -13,8 +13,8 @@
 #define		ECU_VER					"ECU VER : V0.0.1\r"
 #define		ECU_TEST				"ECU VER : T00\r"
 //---------------------------- Define Constant ------------------------------//
-#define		EVB_DEMO		TRUE
-#define		DEBUG_UART		TRUE
+#define		EVB_DEMO		FALSE
+#define		DEBUG_UART		FALSE
 
 #define		VAL_INIT			0
 
