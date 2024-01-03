@@ -3,8 +3,8 @@
 ;       Function	: Declare USS Drivers Function & Variable
 ;       Chip		: Infineon TC397
 ;       Clock		: Internal SYSPLL 300MHz
-;       Date		: 2023 / 1 / 2
-;       Author		: Fenderson Lu
+;       Date		: 2023 / 1 / 3
+;       Author		: Fenderson Lu & Jim
 ******************************************************************************/
 #ifndef __USSDRIVERS_H__
 #define __USSDRIVERS_H__
@@ -15,6 +15,7 @@
 #define		UNIT_A_U8			8				// Bits
 #define		UNIT_A_U32			32
 #define		UNIT_U32			0xFFFFFFFF	
+#define     UNIT_U16            0xFFFF
 #define		REG_BIT_7			0x80
 #define		PARITY_BIT			0x01
 #define		INIT_START			1
@@ -545,7 +546,7 @@ typedef struct
 	uint32 u32ReadThresSetup[ACK_U32_LEN_READ_THRES_SETUP];
 	uint32 u32ReadMeasSetup[ACK_U32_LEN_READ_MEAS_SETUP];
 	uint32 u32ReadStatus;
-	uint32 u32ReadTemp;
+	uint16 u16ReadTemp;
 	uint32 u32CalibRead[ACK_U32_LEN_CALIB_READ];
 	uint32 u32EeRead[ACK_U32_LEN_EE_READ];
 	uint32 u32ReadId;	
@@ -594,6 +595,8 @@ extern void UssDrivers_Cmds_SedRecEnv_Send(uint16 u16Mask, Uss_Cmds_SendRecEnv t
 extern uint32 UssDrivers_RxTagTCnt_Get(void);
 extern void UssDrivers_RxTagTCnt_Set(uint32 u32Cnt);
 extern Func_Status_t UssDrivers_Bilat_Get(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRecEnv tCmd, uint32 *u32BilateralT);
+extern Func_Status_t UssDrivers_Sensors_Temp_Read(Uss_Sensor_Id_t tSensorMask);
+extern Func_Status_t UssDrivers_Temperature_Get(Uss_Sensor_Id_t tSensorMask, uint16 *u16Temp);
 #endif
 
 

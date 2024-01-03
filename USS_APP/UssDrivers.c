@@ -3,8 +3,8 @@
 ;       Function	:	USS (Ultrasonic Sensor System) Function
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2023 / 1 / 2
-;       Author		:	Fenderson Lu
+;       Date		:	2023 / 1 / 3
+;       Author		:	Fenderson Lu & Jim
 ;       Describe	: 	USS_TX_1 = USS_IO_TX1 (P15.2)
 ;						USS_RX_1 = USS_IO_RX1 (P15.8)
 ;						USS_TX_2 = USS_IO_TX2 (P15.3)
@@ -1359,9 +1359,9 @@ Func_Status_t UssDrivers_SndRecEnv_Detect(Uss_Detect_Mode_t tMode, uint16 u16Sen
 		break;
 		case MODE_SEND_REC_C:
 			UssDrivers_Cmds_SedRecEnv_Send(gu16SendMask, CMDS_SEND_C);
-			//Common_Delay(UNIT_MILLI, 1);
-			//UssDrivers_Cmds_SedRecEnv_Send(gu16RecMask, CMDS_REC_C);	
-			//Common_Delay(UNIT_MILLI, 1);
+			Common_Delay(UNIT_MILLI, 1);
+			UssDrivers_Cmds_SedRecEnv_Send(gu16RecMask, CMDS_REC_C);	
+			Common_Delay(UNIT_MILLI, 1);
 		break;
 		case MODE_ENVELOPE:
 			UssDrivers_Cmds_SedRecEnv_Send(gu16SendMask, CMDS_ENVELOPE_SEND_A);
@@ -1410,6 +1410,20 @@ Func_Status_t UssDrivers_Bilat_Get(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRec
 		break;		
 	}
 	
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Sensors_Temp_Read(Uss_Sensor_Id_t tSensorMask)
+{
+	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_READ_TEMP);	
+
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Temperature_Get(Uss_Sensor_Id_t tSensorMask, uint16 *u16Temp)
+{
+	*u16Temp = gtUssRxAckData[tSensorMask].u16ReadTemp;
+
 	return FUNC_SUCCESS;
 }
 //---------------------------------------------------------------------------//
@@ -1511,7 +1525,7 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			// Reserved, no ACK
 		break;
 		case EX_CMDS_READ_TEMP:
-			gtUssRxAckData[tSensorMask].u32ReadTemp = (gtUssRxAckData[tSensorMask].u32ReadTemp & (~UNIT_U32)) | gu32UssRxBitsTemp[0];
+			gtUssRxAckData[tSensorMask].u16ReadTemp = (gtUssRxAckData[tSensorMask].u16ReadTemp & (~UNIT_U16)) | (uint16)(gu32UssRxBitsTemp[0]);
 
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] READ_TEMP OK);

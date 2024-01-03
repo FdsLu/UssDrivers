@@ -3,7 +3,7 @@
 ;       Function	: 	Simulate TASK function
 ;       Chip		: 	Infineon TC397
 ;       Clock		: 	Internal SYSPLL 300MHz
-;       Date		: 	2023 / 1 / 2
+;       Date		: 	2023 / 1 / 3
 ;       Author		: 	Fenderson Lu
 ;       Describe	: 	
 ******************************************************************************/
@@ -53,8 +53,8 @@ void TasksApp_3s(void)
 
 	#else
 	//UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_READ_STATUS);
-	UssDrivers_SndRecEnv_Detect(MODE_SEND_REC_C, 0x0002, 0x0000, 37200);	//36ms
-
+	//UssDrivers_SndRecEnv_Detect(MODE_SEND_REC_C, 0x0002, 0x0000, 37200);	//36ms
+	UssDrivers_Sensors_Temp_Read(USS_ID_IO2_TXRX_FLM);
 	
 
 	#endif

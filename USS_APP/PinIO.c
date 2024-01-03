@@ -3,7 +3,7 @@
 ;       Function	: 	GPIO sensing
 ;       Chip		: 	Infineon TC397
 ;       Clock		: 	Internal SYSPLL 300MHz
-;       Date		: 	2023 / 1 / 2
+;       Date		: 	2023 / 1 / 3
 ;       Author		: 	Fenderson Lu
 ;       Describe	: 	ERU interrupt pins
 ;						(1) USS_IO_RX1 = 
@@ -92,6 +92,11 @@ void SCUERU_Int0_Handler(void)
 						u32LowEndT = 0; 			
 					}	
 				#else			
+					if(Common_Down_Counter(&gu32StartTimeTag))
+					{
+						Timer_Gtm_RealTimer_Clear();						
+					}
+				
 					if(IfxPort_getPinState(portUSS_IO_RX2, pinUSS_IO_RX2) == PIN_LEVEL_HIGH)
 					{		
 						u32InvertHighStartT = Timer_Gtm_RealTimer_Get();	// Record trigger start time	
@@ -114,6 +119,7 @@ void SCUERU_Int0_Handler(void)
 						u32InvertHighTotalT = 0;
 						u32InvertHighStartT = 0;
 						u32InvertHighEndT = 0;				
+						gu32StartTimeTag = MODE_ENABLE;
 					}		
 				#endif
 			}		
