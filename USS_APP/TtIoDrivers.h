@@ -3,7 +3,7 @@
 ;       Function	: Declare TT APIs Format Function & Variable
 ;       Chip		: Infineon TC397
 ;       Clock		: Internal SYSPLL 300MHz
-;       Date		: 2023 / 1 / 3
+;       Date		: 2024 / 1 / 4
 ;       Author		: Fenderson Lu & Jim
 ******************************************************************************/
 #ifndef __TTIODRIVERS_H__
@@ -20,6 +20,8 @@ extern int uss_detect(Uss_Detect_Mode_t tMode, uint16 u16SendMask, uint16 u16Rec
 extern int read_bilateral_time(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRecEnv tCmd, uint32 *u32BilateralT);
 extern int get_temp(Uss_Sensor_Id_t tSensorMask);
 extern int read_temp(Uss_Sensor_Id_t tSensorMask, uint16 *u16Temp);
+extern int get_calibration(Uss_Sensor_Id_t tSensorMask);
+extern int read_calibration(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibData);
 #endif
 
 

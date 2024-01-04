@@ -3,7 +3,7 @@
 ;       Function	: 	GPIO sensing
 ;       Chip		: 	Infineon TC397
 ;       Clock		: 	Internal SYSPLL 300MHz
-;       Date		: 	2023 / 1 / 3
+;       Date		: 	2024 / 1 / 4
 ;       Author		: 	Fenderson Lu
 ;       Describe	: 	ERU interrupt pins
 ;						(1) USS_IO_RX1 = 
@@ -19,7 +19,7 @@ ERUconfig gtEruIsrConfig;
 uint32 u32InvertHighStartT, u32InvertHighEndT, u32InvertHighTotalT;
 uint32 u32PreLowStartT;
 uint32 gu32TagStartT, gu32PreTagStartT, gu32TagEndT, gu32PreTagStartT2, gu32TagTotalT;
-uint8 gu8RxAckIndex;
+uint32 gu32RxAckIndex;
 uint32 gu32StartTimeTag = MODE_ENABLE;
 uint32 gu32PwrOnDebounceTime = INIT_ISR;
 #if EVB_DEMO
@@ -43,21 +43,21 @@ void SCUERU_Int0_Handler(void)
 					Timer_Gtm_RealTimer_Clear();
 					gu32TagStartT = Timer_Gtm_RealTimer_Get();
 					gu32PreTagStartT = gu32TagStartT;		
-					gu32TimeTagTemp[gu8RxAckIndex++] = gu32TagStartT - gu32PreTagStartT;
+					gu32TimeTagTemp[gu32RxAckIndex++] = gu32TagStartT - gu32PreTagStartT;
 				}
 				else
 				{
 					gu32TagStartT = Timer_Gtm_RealTimer_Get();
-					gu32TimeTagTemp[gu8RxAckIndex++] = gu32TagStartT - gu32PreTagStartT;
+					gu32TimeTagTemp[gu32RxAckIndex++] = gu32TagStartT - gu32PreTagStartT;
 					gu32TagTotalT = gu32TagStartT - gu32PreTagStartT;
 				}
 				
 				// Receive data finish check
 				if(gu32TagTotalT >= UssDrivers_DetectTimeLen_Get())				
 				{
-					UssDrivers_RxTagTCnt_Set(gu8RxAckIndex-1);
+					UssDrivers_RxTagTCnt_Set(gu32RxAckIndex-1);
 					gu32TagTotalT = 0;
-					gu8RxAckIndex = 0;
+					gu32RxAckIndex = 0;
 					gu32TagStartT = 0;
 					gu32PreTagStartT = 0;
 					gu32StartTimeTag = MODE_ENABLE;
@@ -68,6 +68,11 @@ void SCUERU_Int0_Handler(void)
 			{
 				// Other commands, calculate low pulses time length
 				#if EVB_DEMO
+					if(Common_Down_Counter(&gu32StartTimeTag))
+					{
+						Timer_Gtm_RealTimer_Clear();						
+					}
+									
 					if(IfxPort_getPinState(portUSS_ISR_TEST, pinUSS_ISR_TEST) == PIN_LEVEL_LOW)
 					{		
 						u32LowStartT = Timer_Gtm_RealTimer_Get();		// Record trigger start time	
@@ -77,19 +82,20 @@ void SCUERU_Int0_Handler(void)
 						u32LowEndT = Timer_Gtm_RealTimer_Get(); 		// Record trigger end time
 						u32LowTotalT = u32LowEndT - u32LowStartT; 
 						
-						if(gu8RxAckIndex < UssDrivers_RxAckLen_Get())
+						if(gu32RxAckIndex < UssDrivers_RxAckLen_Get())
 						{
-							gu8LowPulseTemp[gu8RxAckIndex++] = (uint8)u32LowTotalT;
+							gu32LowPulseTemp[gu32RxAckIndex++] = u32LowTotalT;
 						}
 						else
 						{
-							gu8RxAckIndex = 0;
+							gu32RxAckIndex = 0;
 							UssDrivers_RxIsrFinishFlag_Set(TRUE);
 						}
 						
 						u32LowTotalT = 0;
 						u32LowStartT = 0;
 						u32LowEndT = 0; 			
+						gu32StartTimeTag = MODE_ENABLE;
 					}	
 				#else			
 					if(Common_Down_Counter(&gu32StartTimeTag))
@@ -106,13 +112,13 @@ void SCUERU_Int0_Handler(void)
 						u32InvertHighEndT = Timer_Gtm_RealTimer_Get();		// Record trigger end time
 						u32InvertHighTotalT = u32InvertHighEndT - u32InvertHighStartT; 
 						
-						if(gu8RxAckIndex < UssDrivers_RxAckLen_Get())
+						if(gu32RxAckIndex < UssDrivers_RxAckLen_Get())
 						{
-							gu32InvertHighPulseTemp[gu8RxAckIndex++] = u32InvertHighTotalT;
+							gu32InvertHighPulseTemp[gu32RxAckIndex++] = u32InvertHighTotalT;
 						}
 						else
 						{
-							gu8RxAckIndex = 0;
+							gu32RxAckIndex = 0;
 							UssDrivers_RxIsrFinishFlag_Set(TRUE);
 						}
 						

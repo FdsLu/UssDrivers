@@ -3,7 +3,7 @@
 ;       Function	:	USS (Ultrasonic Sensor System) Function
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2023 / 1 / 3
+;       Date		:	2024 / 1 / 4
 ;       Author		:	Fenderson Lu & Jim
 ;       Describe	: 	USS_TX_1 = USS_IO_TX1 (P15.2)
 ;						USS_RX_1 = USS_IO_RX1 (P15.8)
@@ -92,7 +92,7 @@ uint16 gu16RecMask;
 //--------------------------------------------------------------//
 
 #if EVB_DEMO
-uint8 gu8LowPulseTemp[SIZE_USS_RX_RAW];
+uint32 gu32LowPulseTemp[SIZE_USS_RX_RAW];
 #endif
 //---------------------------- Start Program --------------------------------//
 void UssDrivers_Init(void)
@@ -585,6 +585,50 @@ void UssDrivers_Cmds_Transmit(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT0_LOG_0);
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT0_LOG_0);
 			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);	
+
+
+			#if EVB_DEMO
+			// Sensor ACK				
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT0_LOG_0);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT1_LOG_1);
+			UssDrivers_IO_Symbol_Signal(tSensorMask, IO_SYM_T_BIT0_LOG_0);			
+			#endif
+
+			
 		break;
 		case EX_CMDS_EE_COPY:	
 			#if DEBUG_UART
@@ -727,61 +771,61 @@ uint8 UssDrivers_Meas_Parity_Check(ParityChk_Num_MEAS_t tParityNum)
 Func_Status_t UssDrivers_ThresSetup_Para_Write(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresSetupPara)
 {
 	// Set Thresscale_Rec config
-	gu8ThresSetupTxBuff[TS_BYTE0] = (gu8ThresSetupTxBuff[TS_BYTE0] & (~(MASK_B0_THRES_SCALE_REC_L | MASK_B0_THRES_SCALE_REC_H))) | ((tThresSetupPara->u8Thresscale_Rec & MASK_DATA_THRES_SCALE_REC) << SHIFT_BIT_5);
+	gu8ThresSetupTxBuff[TS_BYTE0] = (gu8ThresSetupTxBuff[TS_BYTE0] & (~(MASK_B0_THRES_SCALE_REC_L | MASK_B0_THRES_SCALE_REC_H))) | (((*tThresSetupPara).u8Thresscale_Rec & MASK_DATA_THRES_SCALE_REC) << SHIFT_BIT_5);
 
 	// Set Atg_Alpha config
-	gu8ThresSetupTxBuff[TS_BYTE0] = (gu8ThresSetupTxBuff[TS_BYTE0] & (~MASK_B0_ATG_ALPHA)) | ((tThresSetupPara->u8Atg_Alpha & MASK_DATA_ATG_ALPHA) << SHIFT_BIT_7);
+	gu8ThresSetupTxBuff[TS_BYTE0] = (gu8ThresSetupTxBuff[TS_BYTE0] & (~MASK_B0_ATG_ALPHA)) | (((*tThresSetupPara).u8Atg_Alpha & MASK_DATA_ATG_ALPHA) << SHIFT_BIT_7);
 	
 	// Set Atg_Tau config
-	gu8ThresSetupTxBuff[TS_BYTE1] = (gu8ThresSetupTxBuff[TS_BYTE1] & (~(MASK_B1_ATG_TAU_L | MASK_B1_ATG_TAU_H))) | (tThresSetupPara->u8Atg_Tau & MASK_DATA_ATG_TAU);
+	gu8ThresSetupTxBuff[TS_BYTE1] = (gu8ThresSetupTxBuff[TS_BYTE1] & (~(MASK_B1_ATG_TAU_L | MASK_B1_ATG_TAU_H))) | ((*tThresSetupPara).u8Atg_Tau & MASK_DATA_ATG_TAU);
 
 	// Set Atg_Cfg config
-	gu8ThresSetupTxBuff[TS_BYTE1] = (gu8ThresSetupTxBuff[TS_BYTE1] & (~(MASK_B1_ATG_CFG_L | MASK_B1_ATG_CFG_H))) | ((tThresSetupPara->u8Atg_Cfg & MASK_DATA_ATG_CFG) << SHIFT_BIT_2);
+	gu8ThresSetupTxBuff[TS_BYTE1] = (gu8ThresSetupTxBuff[TS_BYTE1] & (~(MASK_B1_ATG_CFG_L | MASK_B1_ATG_CFG_H))) | (((*tThresSetupPara).u8Atg_Cfg & MASK_DATA_ATG_CFG) << SHIFT_BIT_2);
 
 	// Set Thsft_Cfg config
-	gu8ThresSetupTxBuff[TS_BYTE1] = (gu8ThresSetupTxBuff[TS_BYTE1] & (~(MASK_B1_THSFT_CFG_L | MASK_B1_THSFT_CFG_H))) | ((tThresSetupPara->u8Thsft_Cfg & MASK_DATA_THSFT_CFG) << SHIFT_BIT_4);
+	gu8ThresSetupTxBuff[TS_BYTE1] = (gu8ThresSetupTxBuff[TS_BYTE1] & (~(MASK_B1_THSFT_CFG_L | MASK_B1_THSFT_CFG_H))) | (((*tThresSetupPara).u8Thsft_Cfg & MASK_DATA_THSFT_CFG) << SHIFT_BIT_4);
 
 	// Set THVAL13 config, thval[11] = THVAL13
-	gu8ThresSetupTxBuff[TS_BYTE1] = (gu8ThresSetupTxBuff[TS_BYTE1] & (~(MASK_B1_THVAL13_BIT_0 | MASK_B1_THVAL13_BIT_1))) | ((tThresSetupPara->u8Thval[NUM_THVAL_13] & MASK_DATA_THVAL) << SHIFT_BIT_6);
-	gu8ThresSetupTxBuff[TS_BYTE2] = (gu8ThresSetupTxBuff[TS_BYTE2] & (~(MASK_B2_THVAL13_BIT_2 | MASK_B2_THVAL13_BIT_3 | MASK_B2_THVAL13_BIT_4))) | ((tThresSetupPara->u8Thval[NUM_THVAL_13] & MASK_DATA_THVAL) >> SHIFT_BIT_2);
+	gu8ThresSetupTxBuff[TS_BYTE1] = (gu8ThresSetupTxBuff[TS_BYTE1] & (~(MASK_B1_THVAL13_BIT_0 | MASK_B1_THVAL13_BIT_1))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_13] & MASK_DATA_THVAL) << SHIFT_BIT_6);
+	gu8ThresSetupTxBuff[TS_BYTE2] = (gu8ThresSetupTxBuff[TS_BYTE2] & (~(MASK_B2_THVAL13_BIT_2 | MASK_B2_THVAL13_BIT_3 | MASK_B2_THVAL13_BIT_4))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_13] & MASK_DATA_THVAL) >> SHIFT_BIT_2);
 	
 	// Set THVAL12 config, thval[10] = THVAL12
-	gu8ThresSetupTxBuff[TS_BYTE2] = (gu8ThresSetupTxBuff[TS_BYTE2] & (~(MASK_B2_THVAL12_BIT_0 | MASK_B2_THVAL12_BIT_1 | MASK_B2_THVAL12_BIT_2 | MASK_B2_THVAL12_BIT_3 | MASK_B2_THVAL12_BIT_4))) | ((tThresSetupPara->u8Thval[NUM_THVAL_12] & MASK_DATA_THVAL) << SHIFT_BIT_3);
+	gu8ThresSetupTxBuff[TS_BYTE2] = (gu8ThresSetupTxBuff[TS_BYTE2] & (~(MASK_B2_THVAL12_BIT_0 | MASK_B2_THVAL12_BIT_1 | MASK_B2_THVAL12_BIT_2 | MASK_B2_THVAL12_BIT_3 | MASK_B2_THVAL12_BIT_4))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_12] & MASK_DATA_THVAL) << SHIFT_BIT_3);
 	
 	// Set THVAL11 config, thval[9] = THVAL11
-	gu8ThresSetupTxBuff[TS_BYTE3] = (gu8ThresSetupTxBuff[TS_BYTE3] & (~(MASK_B3_THVAL11_BIT_0 | MASK_B3_THVAL11_BIT_1 | MASK_B3_THVAL11_BIT_2 | MASK_B3_THVAL11_BIT_3 | MASK_B3_THVAL11_BIT_4))) | (tThresSetupPara->u8Thval[NUM_THVAL_11] & MASK_DATA_THVAL);
+	gu8ThresSetupTxBuff[TS_BYTE3] = (gu8ThresSetupTxBuff[TS_BYTE3] & (~(MASK_B3_THVAL11_BIT_0 | MASK_B3_THVAL11_BIT_1 | MASK_B3_THVAL11_BIT_2 | MASK_B3_THVAL11_BIT_3 | MASK_B3_THVAL11_BIT_4))) | ((*tThresSetupPara).u8Thval[NUM_THVAL_11] & MASK_DATA_THVAL);
 
 	// Set THVAL10 config
-	gu8ThresSetupTxBuff[TS_BYTE3] = (gu8ThresSetupTxBuff[TS_BYTE3] & (~(MASK_B3_THVAL10_BIT_0 | MASK_B3_THVAL10_BIT_1 | MASK_B3_THVAL10_BIT_2))) | ((tThresSetupPara->u8Thval[NUM_THVAL_10] & MASK_DATA_THVAL) << SHIFT_BIT_5);
-	gu8ThresSetupTxBuff[TS_BYTE4] = (gu8ThresSetupTxBuff[TS_BYTE4] & (~(MASK_B4_THVAL10_BIT_3 | MASK_B4_THVAL10_BIT_4))) | ((tThresSetupPara->u8Thval[NUM_THVAL_10] & MASK_DATA_THVAL) >> SHIFT_BIT_3);
+	gu8ThresSetupTxBuff[TS_BYTE3] = (gu8ThresSetupTxBuff[TS_BYTE3] & (~(MASK_B3_THVAL10_BIT_0 | MASK_B3_THVAL10_BIT_1 | MASK_B3_THVAL10_BIT_2))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_10] & MASK_DATA_THVAL) << SHIFT_BIT_5);
+	gu8ThresSetupTxBuff[TS_BYTE4] = (gu8ThresSetupTxBuff[TS_BYTE4] & (~(MASK_B4_THVAL10_BIT_3 | MASK_B4_THVAL10_BIT_4))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_10] & MASK_DATA_THVAL) >> SHIFT_BIT_3);
 
 	// Set THVAL9 config
-	gu8ThresSetupTxBuff[TS_BYTE4] = (gu8ThresSetupTxBuff[TS_BYTE4] & (~(MASK_B4_THVAL9_BIT_0 | MASK_B4_THVAL9_BIT_1 | MASK_B4_THVAL9_BIT_2 | MASK_B4_THVAL9_BIT_3 | MASK_B4_THVAL9_BIT_4))) | ((tThresSetupPara->u8Thval[NUM_THVAL_9] & MASK_DATA_THVAL) << SHIFT_BIT_2);
+	gu8ThresSetupTxBuff[TS_BYTE4] = (gu8ThresSetupTxBuff[TS_BYTE4] & (~(MASK_B4_THVAL9_BIT_0 | MASK_B4_THVAL9_BIT_1 | MASK_B4_THVAL9_BIT_2 | MASK_B4_THVAL9_BIT_3 | MASK_B4_THVAL9_BIT_4))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_9] & MASK_DATA_THVAL) << SHIFT_BIT_2);
 
 	// Set THVAL8 config
-	gu8ThresSetupTxBuff[TS_BYTE4] = (gu8ThresSetupTxBuff[TS_BYTE4] & (~MASK_B4_THVAL8_BIT_0)) | ((tThresSetupPara->u8Thval[NUM_THVAL_8] & MASK_DATA_THVAL) << SHIFT_BIT_7);
-	gu8ThresSetupTxBuff[TS_BYTE5] = (gu8ThresSetupTxBuff[TS_BYTE5] & (~(MASK_B5_THVAL8_BIT_1 | MASK_B5_THVAL8_BIT_2 | MASK_B5_THVAL8_BIT_3 | MASK_B5_THVAL8_BIT_4))) | ((tThresSetupPara->u8Thval[NUM_THVAL_8] & MASK_DATA_THVAL) >> SHIFT_BIT_1);
+	gu8ThresSetupTxBuff[TS_BYTE4] = (gu8ThresSetupTxBuff[TS_BYTE4] & (~MASK_B4_THVAL8_BIT_0)) | (((*tThresSetupPara).u8Thval[NUM_THVAL_8] & MASK_DATA_THVAL) << SHIFT_BIT_7);
+	gu8ThresSetupTxBuff[TS_BYTE5] = (gu8ThresSetupTxBuff[TS_BYTE5] & (~(MASK_B5_THVAL8_BIT_1 | MASK_B5_THVAL8_BIT_2 | MASK_B5_THVAL8_BIT_3 | MASK_B5_THVAL8_BIT_4))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_8] & MASK_DATA_THVAL) >> SHIFT_BIT_1);
 
 	// Set THVAL7 config
-	gu8ThresSetupTxBuff[TS_BYTE5] = (gu8ThresSetupTxBuff[TS_BYTE5] & (~(MASK_B5_THVAL7_BIT_0 | MASK_B5_THVAL7_BIT_1 | MASK_B5_THVAL7_BIT_2 | MASK_B5_THVAL7_BIT_3))) | ((tThresSetupPara->u8Thval[NUM_THVAL_7] & MASK_DATA_THVAL) << SHIFT_BIT_4);
-	gu8ThresSetupTxBuff[TS_BYTE6] = (gu8ThresSetupTxBuff[TS_BYTE6] & (~MASK_B6_THVAL7_BIT_4)) | ((tThresSetupPara->u8Thval[NUM_THVAL_7] & MASK_DATA_THVAL) >> SHIFT_BIT_4);
+	gu8ThresSetupTxBuff[TS_BYTE5] = (gu8ThresSetupTxBuff[TS_BYTE5] & (~(MASK_B5_THVAL7_BIT_0 | MASK_B5_THVAL7_BIT_1 | MASK_B5_THVAL7_BIT_2 | MASK_B5_THVAL7_BIT_3))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_7] & MASK_DATA_THVAL) << SHIFT_BIT_4);
+	gu8ThresSetupTxBuff[TS_BYTE6] = (gu8ThresSetupTxBuff[TS_BYTE6] & (~MASK_B6_THVAL7_BIT_4)) | (((*tThresSetupPara).u8Thval[NUM_THVAL_7] & MASK_DATA_THVAL) >> SHIFT_BIT_4);
 
 	// Set THVAL6 config
-	gu8ThresSetupTxBuff[TS_BYTE6] = (gu8ThresSetupTxBuff[TS_BYTE6] & (~(MASK_B6_THVAL6_BIT_0 | MASK_B6_THVAL6_BIT_1 | MASK_B6_THVAL6_BIT_2 | MASK_B6_THVAL6_BIT_3 | MASK_B6_THVAL6_BIT_4))) | ((tThresSetupPara->u8Thval[NUM_THVAL_6] & MASK_DATA_THVAL) << SHIFT_BIT_1);
+	gu8ThresSetupTxBuff[TS_BYTE6] = (gu8ThresSetupTxBuff[TS_BYTE6] & (~(MASK_B6_THVAL6_BIT_0 | MASK_B6_THVAL6_BIT_1 | MASK_B6_THVAL6_BIT_2 | MASK_B6_THVAL6_BIT_3 | MASK_B6_THVAL6_BIT_4))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_6] & MASK_DATA_THVAL) << SHIFT_BIT_1);
 
 	// Set THVAL5 config
-	gu8ThresSetupTxBuff[TS_BYTE6] = (gu8ThresSetupTxBuff[TS_BYTE6] & (~(MASK_B6_THVAL5_BIT_0 | MASK_B6_THVAL5_BIT_1))) | ((tThresSetupPara->u8Thval[NUM_THVAL_5] & MASK_DATA_THVAL) << SHIFT_BIT_6);
-	gu8ThresSetupTxBuff[TS_BYTE7] = (gu8ThresSetupTxBuff[TS_BYTE7] & (~(MASK_B7_THVAL5_BIT_2 | MASK_B7_THVAL5_BIT_3 | MASK_B7_THVAL5_BIT_4))) | ((tThresSetupPara->u8Thval[NUM_THVAL_5] & MASK_DATA_THVAL) >> SHIFT_BIT_2);
+	gu8ThresSetupTxBuff[TS_BYTE6] = (gu8ThresSetupTxBuff[TS_BYTE6] & (~(MASK_B6_THVAL5_BIT_0 | MASK_B6_THVAL5_BIT_1))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_5] & MASK_DATA_THVAL) << SHIFT_BIT_6);
+	gu8ThresSetupTxBuff[TS_BYTE7] = (gu8ThresSetupTxBuff[TS_BYTE7] & (~(MASK_B7_THVAL5_BIT_2 | MASK_B7_THVAL5_BIT_3 | MASK_B7_THVAL5_BIT_4))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_5] & MASK_DATA_THVAL) >> SHIFT_BIT_2);
 
 	// Set THVAL4 config
-	gu8ThresSetupTxBuff[TS_BYTE7] = (gu8ThresSetupTxBuff[TS_BYTE7] & (~(MASK_B7_THVAL4_BIT_0 | MASK_B7_THVAL4_BIT_1 | MASK_B7_THVAL4_BIT_2 | MASK_B7_THVAL4_BIT_3 | MASK_B7_THVAL4_BIT_4))) | ((tThresSetupPara->u8Thval[NUM_THVAL_4] & MASK_DATA_THVAL) << SHIFT_BIT_3);
+	gu8ThresSetupTxBuff[TS_BYTE7] = (gu8ThresSetupTxBuff[TS_BYTE7] & (~(MASK_B7_THVAL4_BIT_0 | MASK_B7_THVAL4_BIT_1 | MASK_B7_THVAL4_BIT_2 | MASK_B7_THVAL4_BIT_3 | MASK_B7_THVAL4_BIT_4))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_4] & MASK_DATA_THVAL) << SHIFT_BIT_3);
 
 	// Set THVAL3 config
-	gu8ThresSetupTxBuff[TS_BYTE8] = (gu8ThresSetupTxBuff[TS_BYTE8] & (~(MASK_B8_THVAL3_BIT_0 | MASK_B8_THVAL3_BIT_1 | MASK_B8_THVAL3_BIT_2 | MASK_B8_THVAL3_BIT_3 | MASK_B8_THVAL3_BIT_4))) | (tThresSetupPara->u8Thval[NUM_THVAL_3] & MASK_DATA_THVAL);
+	gu8ThresSetupTxBuff[TS_BYTE8] = (gu8ThresSetupTxBuff[TS_BYTE8] & (~(MASK_B8_THVAL3_BIT_0 | MASK_B8_THVAL3_BIT_1 | MASK_B8_THVAL3_BIT_2 | MASK_B8_THVAL3_BIT_3 | MASK_B8_THVAL3_BIT_4))) | ((*tThresSetupPara).u8Thval[NUM_THVAL_3] & MASK_DATA_THVAL);
 
 	// Set THVAL2 config, thval[0] = THVAL2
-	gu8ThresSetupTxBuff[TS_BYTE8] = (gu8ThresSetupTxBuff[TS_BYTE8] & (~(MASK_B8_THVAL2_BIT_0 | MASK_B8_THVAL2_BIT_1 | MASK_B8_THVAL2_BIT_2))) | ((tThresSetupPara->u8Thval[NUM_THVAL_2] & MASK_DATA_THVAL) << SHIFT_BIT_5);
-	gu8ThresSetupTxBuff[TS_BYTE9] = (gu8ThresSetupTxBuff[TS_BYTE9] & (~(MASK_B9_THVAL2_BIT_3 | MASK_B9_THVAL2_BIT_4))) | ((tThresSetupPara->u8Thval[NUM_THVAL_2] & MASK_DATA_THVAL) >> SHIFT_BIT_3);
+	gu8ThresSetupTxBuff[TS_BYTE8] = (gu8ThresSetupTxBuff[TS_BYTE8] & (~(MASK_B8_THVAL2_BIT_0 | MASK_B8_THVAL2_BIT_1 | MASK_B8_THVAL2_BIT_2))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_2] & MASK_DATA_THVAL) << SHIFT_BIT_5);
+	gu8ThresSetupTxBuff[TS_BYTE9] = (gu8ThresSetupTxBuff[TS_BYTE9] & (~(MASK_B9_THVAL2_BIT_3 | MASK_B9_THVAL2_BIT_4))) | (((*tThresSetupPara).u8Thval[NUM_THVAL_2] & MASK_DATA_THVAL) >> SHIFT_BIT_3);
 
 	// Calculate parity bit 0
 	gu8ThresSetupTxBuff[TS_BYTE0] = (gu8ThresSetupTxBuff[TS_BYTE0] & (~MASK_B0_PARITY_0)) | (UssDrivers_Parity_Check(PC_PARITY_0) << SHIFT_BIT_4);
@@ -807,61 +851,61 @@ Func_Status_t UssDrivers_ThresSetup_Para_Write(Uss_Sensor_Id_t tSensorMask, Uss_
 Func_Status_t UssDrivers_Meas_Para_Write(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Data_t *tMeasPara)
 {
 	// Set Filter_cfg config
-	gu8MeasWriteTxBuff[MEAS_BYTE0] = (gu8MeasWriteTxBuff[MEAS_BYTE0] & (~MASK_MEAS_B0_FILTER_CFG)) | ((tMeasPara->u8filter_cfg << SHIFT_BIT_3) & MASK_MEAS_B0_FILTER_CFG);
+	gu8MeasWriteTxBuff[MEAS_BYTE0] = (gu8MeasWriteTxBuff[MEAS_BYTE0] & (~MASK_MEAS_B0_FILTER_CFG)) | (((*tMeasPara).u8filter_cfg << SHIFT_BIT_3) & MASK_MEAS_B0_FILTER_CFG);
 
 	// Set Noise_cfg config
-	gu8MeasWriteTxBuff[MEAS_BYTE0] = (gu8MeasWriteTxBuff[MEAS_BYTE0] & (~MASK_MEAS_B0_NOISE_CFG)) | ((tMeasPara->u8noise_cfg << SHIFT_BIT_4) & MASK_MEAS_B0_NOISE_CFG);
+	gu8MeasWriteTxBuff[MEAS_BYTE0] = (gu8MeasWriteTxBuff[MEAS_BYTE0] & (~MASK_MEAS_B0_NOISE_CFG)) | (((*tMeasPara).u8noise_cfg << SHIFT_BIT_4) & MASK_MEAS_B0_NOISE_CFG);
 
 	// Set Stc_start config
-	gu8MeasWriteTxBuff[MEAS_BYTE0] = (gu8MeasWriteTxBuff[MEAS_BYTE0] & (~MASK_MEAS_B0_STC_START)) | ((tMeasPara->u8stc_start << SHIFT_BIT_6) & MASK_MEAS_B0_STC_START);
+	gu8MeasWriteTxBuff[MEAS_BYTE0] = (gu8MeasWriteTxBuff[MEAS_BYTE0] & (~MASK_MEAS_B0_STC_START)) | (((*tMeasPara).u8stc_start << SHIFT_BIT_6) & MASK_MEAS_B0_STC_START);
 
 	// Set Stc_cfg config
-	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_STC_CFG)) | (tMeasPara->u8stc_cfg & MASK_MEAS_B1_STC_CFG);
+	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_STC_CFG)) | ((*tMeasPara).u8stc_cfg & MASK_MEAS_B1_STC_CFG);
 
 	// Set Epd config
-	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_EPD)) | ((tMeasPara->u8epd << SHIFT_BIT_2) & MASK_MEAS_B1_EPD);
+	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_EPD)) | (((*tMeasPara).u8epd << SHIFT_BIT_2) & MASK_MEAS_B1_EPD);
 
 	// Set Ftc config
-	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_FTC)) | ((tMeasPara->u8ftc << SHIFT_BIT_3) & MASK_MEAS_B1_FTC);
+	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_FTC)) | (((*tMeasPara).u8ftc << SHIFT_BIT_3) & MASK_MEAS_B1_FTC);
 
 	// Set Nftg config
-	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_NFTG)) | ((tMeasPara->u8nftg << SHIFT_BIT_4) & MASK_MEAS_B1_NFTG);
+	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_NFTG)) | (((*tMeasPara).u8nftg << SHIFT_BIT_4) & MASK_MEAS_B1_NFTG);
 
 	// Set Rt_cfg config
-	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_RT_CFG)) | ((tMeasPara->u8rt_cfg << SHIFT_BIT_5) & MASK_MEAS_B1_RT_CFG);
+	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_RT_CFG)) | (((*tMeasPara).u8rt_cfg << SHIFT_BIT_5) & MASK_MEAS_B1_RT_CFG);
 
 	// Set Echo_deb config
-	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_ECHO_DEB)) | ((tMeasPara->u8echo_deb << SHIFT_BIT_6) & MASK_MEAS_B1_ECHO_DEB);
+	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_ECHO_DEB)) | (((*tMeasPara).u8echo_deb << SHIFT_BIT_6) & MASK_MEAS_B1_ECHO_DEB);
 
 	// Set Thresscale_c config
-	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_THRESSCALE_C_L)) | ((uint8)(tMeasPara->u8thresscale_c << SHIFT_BIT_7) & MASK_MEAS_B1_THRESSCALE_C_L);
-	gu8MeasWriteTxBuff[MEAS_BYTE2] = (gu8MeasWriteTxBuff[MEAS_BYTE2] & (~MASK_MEAS_B2_THRESSCALE_C_H)) | ((tMeasPara->u8thresscale_c >> SHIFT_BIT_1) & MASK_MEAS_B2_THRESSCALE_C_H);
+	gu8MeasWriteTxBuff[MEAS_BYTE1] = (gu8MeasWriteTxBuff[MEAS_BYTE1] & (~MASK_MEAS_B1_THRESSCALE_C_L)) | ((uint8)((*tMeasPara).u8thresscale_c << SHIFT_BIT_7) & MASK_MEAS_B1_THRESSCALE_C_L);
+	gu8MeasWriteTxBuff[MEAS_BYTE2] = (gu8MeasWriteTxBuff[MEAS_BYTE2] & (~MASK_MEAS_B2_THRESSCALE_C_H)) | (((*tMeasPara).u8thresscale_c >> SHIFT_BIT_1) & MASK_MEAS_B2_THRESSCALE_C_H);
 
 	// Set TMEAS_C config
-	gu8MeasWriteTxBuff[MEAS_BYTE2] = (gu8MeasWriteTxBuff[MEAS_BYTE2] & (~MASK_MEAS_B2_TMEAS_C)) | ((tMeasPara->u8tmeas_c << SHIFT_BIT_1) & MASK_MEAS_B2_TMEAS_C);
+	gu8MeasWriteTxBuff[MEAS_BYTE2] = (gu8MeasWriteTxBuff[MEAS_BYTE2] & (~MASK_MEAS_B2_TMEAS_C)) | (((*tMeasPara).u8tmeas_c << SHIFT_BIT_1) & MASK_MEAS_B2_TMEAS_C);
 
 	// Set NPULSES_C config
-	gu8MeasWriteTxBuff[MEAS_BYTE2] = (gu8MeasWriteTxBuff[MEAS_BYTE2] & (~MASK_MEAS_B2_NPULSES_C)) | ((tMeasPara->u8npulses_c << SHIFT_BIT_4) & MASK_MEAS_B2_NPULSES_C);
+	gu8MeasWriteTxBuff[MEAS_BYTE2] = (gu8MeasWriteTxBuff[MEAS_BYTE2] & (~MASK_MEAS_B2_NPULSES_C)) | (((*tMeasPara).u8npulses_c << SHIFT_BIT_4) & MASK_MEAS_B2_NPULSES_C);
 
 	// Set THRESSCALE_B config
-	gu8MeasWriteTxBuff[MEAS_BYTE2] = (gu8MeasWriteTxBuff[MEAS_BYTE2] & (~MASK_MEAS_B2_THRESSCALE_B_L)) | ((uint8)(tMeasPara->u8thresscale_b << SHIFT_BIT_7) & MASK_MEAS_B2_THRESSCALE_B_L);
-	gu8MeasWriteTxBuff[MEAS_BYTE3] = (gu8MeasWriteTxBuff[MEAS_BYTE3] & (~MASK_MEAS_B3_THRESSCALE_B_H)) | ((tMeasPara->u8thresscale_b >> SHIFT_BIT_1) & MASK_MEAS_B3_THRESSCALE_B_H);
+	gu8MeasWriteTxBuff[MEAS_BYTE2] = (gu8MeasWriteTxBuff[MEAS_BYTE2] & (~MASK_MEAS_B2_THRESSCALE_B_L)) | ((uint8)((*tMeasPara).u8thresscale_b << SHIFT_BIT_7) & MASK_MEAS_B2_THRESSCALE_B_L);
+	gu8MeasWriteTxBuff[MEAS_BYTE3] = (gu8MeasWriteTxBuff[MEAS_BYTE3] & (~MASK_MEAS_B3_THRESSCALE_B_H)) | (((*tMeasPara).u8thresscale_b >> SHIFT_BIT_1) & MASK_MEAS_B3_THRESSCALE_B_H);
 
 	// Set TMEAS_B config
-	gu8MeasWriteTxBuff[MEAS_BYTE3] = (gu8MeasWriteTxBuff[MEAS_BYTE3] & (~MASK_MEAS_B3_TMEAS_B)) | ((tMeasPara->u8tmeas_b << SHIFT_BIT_1) & MASK_MEAS_B3_TMEAS_B);
+	gu8MeasWriteTxBuff[MEAS_BYTE3] = (gu8MeasWriteTxBuff[MEAS_BYTE3] & (~MASK_MEAS_B3_TMEAS_B)) | (((*tMeasPara).u8tmeas_b << SHIFT_BIT_1) & MASK_MEAS_B3_TMEAS_B);
 
 	// Set NPULSES_B config
-	gu8MeasWriteTxBuff[MEAS_BYTE3] = (gu8MeasWriteTxBuff[MEAS_BYTE3] & (~MASK_MEAS_B3_NPULSES_B)) | ((tMeasPara->u8npulses_b << SHIFT_BIT_4) & MASK_MEAS_B3_NPULSES_B);
+	gu8MeasWriteTxBuff[MEAS_BYTE3] = (gu8MeasWriteTxBuff[MEAS_BYTE3] & (~MASK_MEAS_B3_NPULSES_B)) | (((*tMeasPara).u8npulses_b << SHIFT_BIT_4) & MASK_MEAS_B3_NPULSES_B);
 
 	// Set THRESSCALE_A config
-	gu8MeasWriteTxBuff[MEAS_BYTE3] = (gu8MeasWriteTxBuff[MEAS_BYTE3] & (~MASK_MEAS_B3_THRESSCALE_A_L)) | ((uint8)(tMeasPara->u8thresscale_a << SHIFT_BIT_7) & MASK_MEAS_B3_THRESSCALE_A_L);
-	gu8MeasWriteTxBuff[MEAS_BYTE4] = (gu8MeasWriteTxBuff[MEAS_BYTE4] & (~MASK_MEAS_B4_THRESSCALE_A_H)) | ((tMeasPara->u8thresscale_a >> SHIFT_BIT_1) & MASK_MEAS_B4_THRESSCALE_A_H);
+	gu8MeasWriteTxBuff[MEAS_BYTE3] = (gu8MeasWriteTxBuff[MEAS_BYTE3] & (~MASK_MEAS_B3_THRESSCALE_A_L)) | ((uint8)((*tMeasPara).u8thresscale_a << SHIFT_BIT_7) & MASK_MEAS_B3_THRESSCALE_A_L);
+	gu8MeasWriteTxBuff[MEAS_BYTE4] = (gu8MeasWriteTxBuff[MEAS_BYTE4] & (~MASK_MEAS_B4_THRESSCALE_A_H)) | (((*tMeasPara).u8thresscale_a >> SHIFT_BIT_1) & MASK_MEAS_B4_THRESSCALE_A_H);
 
 	// Set TMEAS_A config
-	gu8MeasWriteTxBuff[MEAS_BYTE4] = (gu8MeasWriteTxBuff[MEAS_BYTE4] & (~MASK_MEAS_B4_TMEAS_A)) | ((tMeasPara->u8tmeas_a << SHIFT_BIT_1) & MASK_MEAS_B4_TMEAS_A);
+	gu8MeasWriteTxBuff[MEAS_BYTE4] = (gu8MeasWriteTxBuff[MEAS_BYTE4] & (~MASK_MEAS_B4_TMEAS_A)) | (((*tMeasPara).u8tmeas_a << SHIFT_BIT_1) & MASK_MEAS_B4_TMEAS_A);
 
 	// Set NPULSES_A config
-	gu8MeasWriteTxBuff[MEAS_BYTE4] = (gu8MeasWriteTxBuff[MEAS_BYTE4] & (~MASK_MEAS_B4_NPULSES_A)) | ((tMeasPara->u8npulses_a << SHIFT_BIT_4) & MASK_MEAS_B4_NPULSES_A);
+	gu8MeasWriteTxBuff[MEAS_BYTE4] = (gu8MeasWriteTxBuff[MEAS_BYTE4] & (~MASK_MEAS_B4_NPULSES_A)) | (((*tMeasPara).u8npulses_a << SHIFT_BIT_4) & MASK_MEAS_B4_NPULSES_A);
 
 	// Calculate parity bit 0
 	gu8MeasWriteTxBuff[MEAS_BYTE0] = (gu8MeasWriteTxBuff[MEAS_BYTE0] & (~MASK_MEAS_B0_PARITY_0)) | (UssDrivers_Meas_Parity_Check(PC_MEAS_PARITY_0) << SHIFT_BIT_2);
@@ -883,27 +927,27 @@ Func_Status_t UssDrivers_Calib_Write(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data
 {
 	// Set F_DRV config
 	gu8CalibWriteTxBuff[CW_BYTE0] = (gu8CalibWriteTxBuff[CW_BYTE0] & (~(MASK_B0_F_DRV_BIT_0 | MASK_B0_F_DRV_BIT_1 | MASK_B0_F_DRV_BIT_2 | MASK_B0_F_DRV_BIT_3 |
-																		MASK_B0_F_DRV_BIT_4 | MASK_B0_F_DRV_BIT_5 | MASK_B0_F_DRV_BIT_6 | MASK_B0_F_DRV_BIT_7))) | (gtUssCalibWritePara->u8F_Drv & MASK_DATA_F_DRV);
+																		MASK_B0_F_DRV_BIT_4 | MASK_B0_F_DRV_BIT_5 | MASK_B0_F_DRV_BIT_6 | MASK_B0_F_DRV_BIT_7))) | ((*tCalibWritePara).u8F_Drv & MASK_W_F_DRV);
 
 	// Set I_DRV config
 	gu8CalibWriteTxBuff[CW_BYTE1] = (gu8CalibWriteTxBuff[CW_BYTE1] & (~(MASK_B1_I_DRV_BIT_0 | MASK_B1_I_DRV_BIT_1 | MASK_B1_I_DRV_BIT_2 | MASK_B1_I_DRV_BIT_3 | 
-																		MASK_B1_I_DRV_BIT_4))) | (gtUssCalibWritePara->u8I_Drv & MASK_DATA_I_DRV);
+																		MASK_B1_I_DRV_BIT_4))) | ((*tCalibWritePara).u8I_Drv & MASK_W_I_DRV);
 
 	// Set G_ANA config
-	gu8CalibWriteTxBuff[CW_BYTE1] = (gu8CalibWriteTxBuff[CW_BYTE1] & (~(MASK_B1_G_ANA_BIT_0 | MASK_B1_G_ANA_BIT_1 | MASK_B1_G_ANA_BIT_2))) | ((gtUssCalibWritePara->u8G_Ana & MASK_DATA_G_ANA) << SHIFT_BIT_5);
+	gu8CalibWriteTxBuff[CW_BYTE1] = (gu8CalibWriteTxBuff[CW_BYTE1] & (~(MASK_B1_G_ANA_BIT_0 | MASK_B1_G_ANA_BIT_1 | MASK_B1_G_ANA_BIT_2))) | (((*tCalibWritePara).u8G_Ana & MASK_W_G_ANA) << SHIFT_BIT_5);
 
 	// Set G_DIG config
 	gu8CalibWriteTxBuff[CW_BYTE2] = (gu8CalibWriteTxBuff[CW_BYTE2] & (~(MASK_B2_G_DIG_BIT_0 | MASK_B2_G_DIG_BIT_1 | MASK_B2_G_DIG_BIT_2 | MASK_B2_G_DIG_BIT_3 |
-																		MASK_B2_G_DIG_BIT_4 | MASK_B2_G_DIG_BIT_5 | MASK_B2_G_DIG_BIT_6))) | (gtUssCalibWritePara->u8G_Dig & MASK_DATA_G_DIG);
+																		MASK_B2_G_DIG_BIT_4 | MASK_B2_G_DIG_BIT_5 | MASK_B2_G_DIG_BIT_6))) | ((*tCalibWritePara).u8G_Dig & MASK_W_G_DIG);
 
 	// Set CUSTOMER_BITS config
-	gu8CalibWriteTxBuff[CW_BYTE2] = (gu8CalibWriteTxBuff[CW_BYTE2] & (~(MASK_B2_CUSTOMER_BITS_BIT_0))) | ((gtUssCalibWritePara->u8Customer_Bits & MASK_DATA_CUSTOMER_BITS) << SHIFT_BIT_7);
+	gu8CalibWriteTxBuff[CW_BYTE2] = (gu8CalibWriteTxBuff[CW_BYTE2] & (~(MASK_B2_CUSTOMER_BITS_BIT_0))) | (((*tCalibWritePara).u8Customer_Bits & MASK_W_CUSTOMER_BITS) << SHIFT_BIT_7);
 	gu8CalibWriteTxBuff[CW_BYTE3] = (gu8CalibWriteTxBuff[CW_BYTE3] & (~(MASK_B3_CUSTOMER_BITS_BIT_1 | MASK_B3_CUSTOMER_BITS_BIT_2 | MASK_B3_CUSTOMER_BITS_BIT_3 | MASK_B3_CUSTOMER_BITS_BIT_4 |
-																		MASK_B3_CUSTOMER_BITS_BIT_5 | MASK_B3_CUSTOMER_BITS_BIT_6))) | ((gtUssCalibWritePara->u8Customer_Bits & MASK_DATA_CUSTOMER_BITS) >> SHIFT_BIT_1);
+																		MASK_B3_CUSTOMER_BITS_BIT_5 | MASK_B3_CUSTOMER_BITS_BIT_6))) | (((*tCalibWritePara).u8Customer_Bits & MASK_W_CUSTOMER_BITS) >> SHIFT_BIT_1);
 
 	// Set OSC_TRIM config
-	gu8CalibWriteTxBuff[CW_BYTE3] = (gu8CalibWriteTxBuff[CW_BYTE3] & (~(MASK_B3_OSC_TRIM_BIT_0 | MASK_B3_OSC_TRIM_BIT_1))) | ((gtUssCalibWritePara->u8Osc_Trim & MASK_DATA_OSC_TRIM) << SHIFT_BIT_6);
-	gu8CalibWriteTxBuff[CW_BYTE4] = (gu8CalibWriteTxBuff[CW_BYTE4] & (~(MASK_B4_OSC_TRIM_BIT_2 | MASK_B4_OSC_TRIM_BIT_3))) | ((gtUssCalibWritePara->u8Osc_Trim & MASK_DATA_OSC_TRIM) >> SHIFT_BIT_2);
+	gu8CalibWriteTxBuff[CW_BYTE3] = (gu8CalibWriteTxBuff[CW_BYTE3] & (~(MASK_B3_OSC_TRIM_BIT_0 | MASK_B3_OSC_TRIM_BIT_1))) | (((*tCalibWritePara).u8Osc_Trim & MASK_W_OSC_TRIM) << SHIFT_BIT_6);
+	gu8CalibWriteTxBuff[CW_BYTE4] = (gu8CalibWriteTxBuff[CW_BYTE4] & (~(MASK_B4_OSC_TRIM_BIT_2 | MASK_B4_OSC_TRIM_BIT_3))) | (((*tCalibWritePara).u8Osc_Trim & MASK_W_OSC_TRIM) >> SHIFT_BIT_2);
 
 	// Send parameters to sensor
 	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_CALIB_WRITE);
@@ -1427,6 +1471,25 @@ Func_Status_t UssDrivers_Temperature_Get(Uss_Sensor_Id_t tSensorMask, uint16 *u1
 	return FUNC_SUCCESS;
 }
 //---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Sensors_Calib_Read(Uss_Sensor_Id_t tSensorMask)
+{
+	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_CALIB_READ);	
+
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Calib_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibData)
+{
+	(*tCalibData).u8F_Drv = (uint8)(gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_F_DRV);
+	(*tCalibData).u8I_Drv = (uint8)((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_I_DRV) >> SHIFT_BIT_8);
+	(*tCalibData).u8G_Ana = (uint8)((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_G_ANA) >> SHIFT_BIT_13);
+	(*tCalibData).u8G_Dig = (uint8)((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_G_DIG) >> SHIFT_BIT_16);
+	(*tCalibData).u8Customer_Bits = (uint8)((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_CUSTOMER_BITS) >> SHIFT_BIT_23);
+	(*tCalibData).u8Osc_Trim = (uint8)(((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_OSC_TRIM_L) >> SHIFT_BIT_30) | ((gtUssRxAckData[tSensorMask].u32CalibRead[1] & MASK_R_OSC_TRIM_H) >> SHIFT_BIT_30));
+	
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
 void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8Cmd)
 {
 	switch(u8Cmd)
@@ -1581,6 +1644,8 @@ void UssDrivers_Rx_Data_Parse(boolean bFlag)
 	uint32 u32UnitShift = VAL_INIT; 
 	uint32 u32IndexTemp = VAL_INIT;
 	uint32 u32BitShift = VAL_INIT;
+	uint32 u32AckTotalLen = VAL_INIT;
+	uint32 u32ShiftTotalLen = VAL_INIT;
 	
 	if(bFlag == TRUE)	
 	{
@@ -1600,16 +1665,18 @@ void UssDrivers_Rx_Data_Parse(boolean bFlag)
 			// Capture time transfer to logic value 
 			for(u32Index = VAL_INIT; u32Index < (gu32UssRxAckLen - gu32TxFilterLen); u32Index++)
 			{
-				u32UnitShift = u32Index / UNIT_A_U32;
-				u32IndexTemp = (gu32UssRxAckLen - u32Index - INIT_START) / UNIT_A_U32;
-				u32BitShift = gu32UssRxAckLen - INIT_START - gu32TxFilterLen - u32Index - (UNIT_A_U32 * u32UnitShift);
+				u32AckTotalLen = gu32UssRxAckLen - gu32TxFilterLen;
+				u32UnitShift = (u32AckTotalLen - u32Index) / UNIT_A_U32;				
+				u32ShiftTotalLen = u32AckTotalLen - u32Index - (UNIT_A_U32 * u32UnitShift);
+				u32IndexTemp = (u32AckTotalLen - u32Index) / UNIT_A_U32;
+				u32BitShift = u32ShiftTotalLen - ZERO_START;
 
 				#if EVB_DEMO
-					if((gu8LowPulseTemp[u32Index + gu32TxFilterLen] >= SYM_RX_T_BIT1_MIN) && (gu8LowPulseTemp[u32Index + gu32TxFilterLen] < SYM_RX_T_BIT1_MAX))
+					if((gu32LowPulseTemp[u32Index + gu32TxFilterLen] >= SYM_RX_T_BIT1_MIN) && (gu32LowPulseTemp[u32Index + gu32TxFilterLen] < SYM_RX_T_BIT1_MAX))
 					{				
 						gu32UssRxBitsTemp[u32IndexTemp] = (gu32UssRxBitsTemp[u32IndexTemp]) | (USS_SIGNAL_1 << u32BitShift);
 					}
-					else if((gu8LowPulseTemp[u32Index + gu32TxFilterLen] >= SYM_RX_T_BIT0_MIN) && (gu8LowPulseTemp[u32Index + gu32TxFilterLen] < SYM_RX_T_BIT0_MAX))
+					else if((gu32LowPulseTemp[u32Index + gu32TxFilterLen] >= SYM_RX_T_BIT0_MIN) && (gu32LowPulseTemp[u32Index + gu32TxFilterLen] < SYM_RX_T_BIT0_MAX))
 					{
 						gu32UssRxBitsTemp[u32IndexTemp] = (gu32UssRxBitsTemp[u32IndexTemp]) | (USS_SIGNAL_0 << u32BitShift) ;
 					}
@@ -1640,7 +1707,7 @@ void UssDrivers_Rx_Data_Parse(boolean bFlag)
 			UssDrivers_Rx_Data_Store(tUssSensorId, gu8UssTxCmd);
 			
 			#if EVB_DEMO
-			memset(&gu8LowPulseTemp, VAL_INIT, sizeof(gu8LowPulseTemp));	// Clear buffer
+			memset(&gu32LowPulseTemp, VAL_INIT, sizeof(gu32LowPulseTemp));	// Clear buffer
 			#else
 			memset(&gu32InvertHighPulseTemp, VAL_INIT, sizeof(gu32InvertHighPulseTemp));	// Clear buffer
 			#endif

@@ -3,7 +3,7 @@
 ;       Function	: Declare USS Drivers Function & Variable
 ;       Chip		: Infineon TC397
 ;       Clock		: Internal SYSPLL 300MHz
-;       Date		: 2023 / 1 / 3
+;       Date		: 2024 / 1 / 4
 ;       Author		: Fenderson Lu & Jim
 ******************************************************************************/
 #ifndef __USSDRIVERS_H__
@@ -18,7 +18,17 @@
 #define     UNIT_U16            0xFFFF
 #define		REG_BIT_7			0x80
 #define		PARITY_BIT			0x01
-#define		INIT_START			1
+#define		ZERO_START			1
+
+
+// CalibDataReadMask
+#define		MASK_R_F_DRV			0x00000000FFul
+#define		MASK_R_I_DRV			0x0000001F00ul
+#define		MASK_R_G_ANA			0x000000D000ul
+#define		MASK_R_G_DIG			0x00007F0000ul
+#define		MASK_R_CUSTOMER_BITS	0x003F800000ul
+#define		MASK_R_OSC_TRIM_L		0xC0000000ul
+#define		MASK_R_OSC_TRIM_H		0x03
 
 enum UssRxSymbolSignalLimit{
 	SYM_RX_T_BIT0_MIN = 93,
@@ -376,14 +386,14 @@ enum CalibDataBitsMask{
 	MASK_B4_VPROG_STATUS = 0x04	
 };
 
-enum CalibDataStructureMask{
-	MASK_DATA_F_DRV = 0xFF,
-	MASK_DATA_I_DRV = 0x1F,
-	MASK_DATA_G_ANA = 0x07,
-	MASK_DATA_G_DIG = 0x7F,
-	MASK_DATA_CUSTOMER_BITS = 0x7F,
-	MASK_DATA_OSC_TRIM = 0x0F,
-	MASK_DATA_VPROG_STATUS = 0x01
+enum CalibDataWriteMask{
+	MASK_W_F_DRV = 0xFF,
+	MASK_W_I_DRV = 0x1F,
+	MASK_W_G_ANA = 0x07,
+	MASK_W_G_DIG = 0x7F,
+	MASK_W_CUSTOMER_BITS = 0x7F,
+	MASK_W_OSC_TRIM = 0x0F,
+	MASK_W_VPROG_STATUS = 0x01
 };
 //---------------- SEND_x / RECEIVE_x Command --------------------//
 enum SEND_A_AckBitsMask{
@@ -561,7 +571,7 @@ extern Ifx_P *gtUssIoPort[SIZE_USS_SENSOR];
 extern uint8 gu8UssIoPin[SIZE_USS_SENSOR];
 extern Uss_Rx_Ack_Data_t gtUssRxAckData[SIZE_USS_SENSOR];
 #if EVB_DEMO
-extern uint8 gu8LowPulseTemp[SIZE_USS_RX_RAW];
+extern uint32 gu32LowPulseTemp[SIZE_USS_RX_RAW];
 #endif
 //---------------------------- Declare Function -----------------------------// 
 extern void UssDrivers_Init(void);
@@ -597,6 +607,8 @@ extern void UssDrivers_RxTagTCnt_Set(uint32 u32Cnt);
 extern Func_Status_t UssDrivers_Bilat_Get(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRecEnv tCmd, uint32 *u32BilateralT);
 extern Func_Status_t UssDrivers_Sensors_Temp_Read(Uss_Sensor_Id_t tSensorMask);
 extern Func_Status_t UssDrivers_Temperature_Get(Uss_Sensor_Id_t tSensorMask, uint16 *u16Temp);
+extern Func_Status_t UssDrivers_Sensors_Calib_Read(Uss_Sensor_Id_t tSensorMask);
+extern Func_Status_t UssDrivers_Calib_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibData);
 #endif
 
 

@@ -3,7 +3,7 @@
 ;       Function	:	The Main Program
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2023 / 12 / 28
+;       Date		:	2024 / 1 / 4
 ;       Author		:	Fenderson Lu
 ******************************************************************************/
 //---------------------------- Include File ---------------------------------//
@@ -20,8 +20,8 @@
 void core0_main(void)
 {
 	Clock_Init();
+	Timer_Gtm_Init();	
 	Timer_Gpt12_Init();
-	Timer_Gtm_Init();
 	PinIO_Init();
 	UssDrivers_Init();	
 	

@@ -3,7 +3,7 @@
 ;       Function	:	APIs transfer to TT API format
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2023 / 1 / 3
+;       Date		:	2024 / 1 / 4
 ;       Author		:	Fenderson Lu & Jim
 ;		Description	:	
 ******************************************************************************/
@@ -19,7 +19,7 @@
 ;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]		- Sensors ID
 ;									[Uss_Thres_Data_t *tThresSetupPara]	- Threshold setup parameters
 ;       Return Values			:	0 = FUNC_SUCCESS
-;		Description				:	Ex. write_threshold(USS_ID_IO1_TXRX_FLC, &gtUssThresSetupPara[0])
+;		Description				:	Ex. write_threshold(USS_ID_IO1_TXRX_FLC, &gtUssThresSetupPara)
 ******************************************************************************/
 int write_threshold(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresSetupPara)
 {
@@ -32,7 +32,7 @@ int write_threshold(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresSetupPa
 ;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]		- Sensors ID
 ;									[Uss_Calib_Data_t *tCalibWritePara]	- Calibration write parameters
 ;       Return Values			:	0 = FUNC_SUCCESS
-;		Description				:	Ex. write_calibration(USS_ID_IO1_TXRX_FLC, &gtUssCalibWritePara[0])
+;		Description				:	Ex. write_calibration(USS_ID_IO1_TXRX_FLC, &gtUssCalibWritePara)
 ******************************************************************************/
 int write_calibration(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibWritePara)
 {
@@ -123,6 +123,33 @@ int get_temp(Uss_Sensor_Id_t tSensorMask)
 int read_temp(Uss_Sensor_Id_t tSensorMask, uint16 *u16Temp)
 {
 	return (int)UssDrivers_Temperature_Get(tSensorMask, u16Temp);
+}
+
+/******************************************************************************
+;       Function Name			:	int get_calibration(Uss_Sensor_Id_t tSensorMask)
+;       Function Description	:	Read sensors calibration data.
+;       Parameters				:	[Uss_Sensor_Id_t tSensorMask] - Sensors ID
+;       Return Values			:	0 = Success
+;									1 = Failure
+;		Description				:	Ex. get_calibration(USS_ID_IO2_TXRX_FLM)
+******************************************************************************/
+int get_calibration(Uss_Sensor_Id_t tSensorMask)
+{
+	return (int)UssDrivers_Sensors_Calib_Read(tSensorMask);
+}
+
+/******************************************************************************
+;       Function Name			:	int read_calibration(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibData)
+;       Function Description	:	Get calibration values.
+;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]	- Sensors ID
+;									[Uss_Calib_Data_t *tCalibData]	- calibration values
+;       Return Values			:	0 = Success
+;									1 = Failure
+;		Description				:	Ex. read_calibration(USS_ID_IO2_TXRX_FLM, &CalibBuff)
+******************************************************************************/
+int read_calibration(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibData)
+{
+	return (int)UssDrivers_Calib_Get(tSensorMask, tCalibData);
 }
 //---------------------------------------------------------------------------//
 
