@@ -3,7 +3,7 @@
 ;       Function	:	USS (Ultrasonic Sensor System) Function
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2024 / 1 / 4
+;       Date		:	2024 / 1 / 5
 ;       Author		:	Fenderson Lu & Jim
 ;       Describe	: 	USS_TX_1 = USS_IO_TX1 (P15.2)
 ;						USS_RX_1 = USS_IO_RX1 (P15.8)
@@ -29,7 +29,7 @@ uint8 gu8ThresSetupTxBuff[SIZE_THRES_SETUP];
 uint8 gu8MeasWriteTxBuff[SIZE_MEAS_WRITE];
 uint8 gu8CalibWriteTxBuff[SIZE_CALIB_WRITE];
 
-uint32 gu32InvertHighPulseTemp[SIZE_USS_RX_RAW];
+uint32 gu32InvertHighPulseTemp[SIZE_ISR_RX_RAW];
 
 uint32 gu32TimeTagTemp[SIZE_TIME_TAG];
 
@@ -92,7 +92,7 @@ uint16 gu16RecMask;
 //--------------------------------------------------------------//
 
 #if EVB_DEMO
-uint32 gu32LowPulseTemp[SIZE_USS_RX_RAW];
+uint32 gu32LowPulseTemp[SIZE_ISR_RX_RAW];
 #endif
 //---------------------------- Start Program --------------------------------//
 void UssDrivers_Init(void)
@@ -1485,8 +1485,31 @@ Func_Status_t UssDrivers_Calib_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t
 	(*tCalibData).u8G_Ana = (uint8)((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_G_ANA) >> SHIFT_BIT_13);
 	(*tCalibData).u8G_Dig = (uint8)((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_G_DIG) >> SHIFT_BIT_16);
 	(*tCalibData).u8Customer_Bits = (uint8)((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_CUSTOMER_BITS) >> SHIFT_BIT_23);
-	(*tCalibData).u8Osc_Trim = (uint8)(((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_OSC_TRIM_L) >> SHIFT_BIT_30) | ((gtUssRxAckData[tSensorMask].u32CalibRead[1] & MASK_R_OSC_TRIM_H) >> SHIFT_BIT_30));
+	(*tCalibData).u8Osc_Trim = (uint8)(((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_OSC_TRIM_L) >> SHIFT_BIT_30) | 
+								((gtUssRxAckData[tSensorMask].u32CalibRead[1] & MASK_R_OSC_TRIM_H) << SHIFT_BIT_2));
 	
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Sensors_EEPROM_Read(Uss_Sensor_Id_t tSensorMask)		
+{
+	// Sensor ACK need about 16ms
+	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_EE_READ);	
+
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_EEPROM_Data_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tEepromData)
+{	
+	// the third packets (EEPROM_data + VPROM_Bit)
+	(*tEepromData).u8Vprog_Status = (uint8)(gtUssRxAckData[tSensorMask].u32EeRead[0] & MASK_R_VPROM_STATUS);
+	(*tEepromData).u8F_Drv = (uint8)((gtUssRxAckData[tSensorMask].u32EeRead[0] & (MASK_R_F_DRV << 1)) >> SHIFT_BIT_1);
+	(*tEepromData).u8I_Drv = (uint8)((gtUssRxAckData[tSensorMask].u32EeRead[0] & (MASK_R_I_DRV << 1)) >> SHIFT_BIT_9);
+	(*tEepromData).u8G_Ana = (uint8)((gtUssRxAckData[tSensorMask].u32EeRead[0] & (MASK_R_G_ANA << 1)) >> SHIFT_BIT_14);
+	(*tEepromData).u8G_Dig = (uint8)((gtUssRxAckData[tSensorMask].u32EeRead[0] & (MASK_R_G_DIG << 1)) >> SHIFT_BIT_17);
+	(*tEepromData).u8Customer_Bits = (uint8)((gtUssRxAckData[tSensorMask].u32EeRead[0] & (MASK_R_CUSTOMER_BITS << 1)) >> SHIFT_BIT_24);
+	(*tEepromData).u8Osc_Trim = (uint8)(((gtUssRxAckData[tSensorMask].u32EeRead[0] & MASK_R_EE_OSC_TRIM_L) >> SHIFT_BIT_31) | 
+								((gtUssRxAckData[tSensorMask].u32EeRead[1] & MASK_R_EE_OSC_TRIM_H) << SHIFT_BIT_1));
 	return FUNC_SUCCESS;
 }
 //---------------------------------------------------------------------------//
@@ -1617,6 +1640,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 		case EX_CMDS_EE_READ:
 			gtUssRxAckData[tSensorMask].u32EeRead[0] = (gtUssRxAckData[tSensorMask].u32EeRead[0] & (~UNIT_U32)) | gu32UssRxBitsTemp[0];
 			gtUssRxAckData[tSensorMask].u32EeRead[1] = (gtUssRxAckData[tSensorMask].u32EeRead[1] & (~UNIT_U32)) | gu32UssRxBitsTemp[1];
+			gtUssRxAckData[tSensorMask].u32EeRead[2] = (gtUssRxAckData[tSensorMask].u32EeRead[2] & (~UNIT_U32)) | gu32UssRxBitsTemp[2];
+			gtUssRxAckData[tSensorMask].u32EeRead[3] = (gtUssRxAckData[tSensorMask].u32EeRead[3] & (~UNIT_U32)) | gu32UssRxBitsTemp[3];
 
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] EE_READ OK);

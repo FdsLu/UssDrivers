@@ -3,7 +3,7 @@
 ;       Function	:	APIs transfer to TT API format
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2024 / 1 / 4
+;       Date		:	2024 / 1 / 5
 ;       Author		:	Fenderson Lu & Jim
 ;		Description	:	
 ******************************************************************************/
@@ -150,6 +150,33 @@ int get_calibration(Uss_Sensor_Id_t tSensorMask)
 int read_calibration(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibData)
 {
 	return (int)UssDrivers_Calib_Get(tSensorMask, tCalibData);
+}
+
+/******************************************************************************
+;       Function Name			:	int get_eeprom(Uss_Sensor_Id_t tSensorMask)
+;       Function Description	:	Read sensors EEPROM values.
+;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]	- Sensors ID
+;       Return Values			:	0 = Success
+;									1 = Failure
+;		Description				:	Ex. get_eeprom(USS_ID_IO2_TXRX_FLM)
+******************************************************************************/
+int get_eeprom(Uss_Sensor_Id_t tSensorMask)
+{
+	return (int)UssDrivers_Sensors_EEPROM_Read(tSensorMask);
+}
+
+/******************************************************************************
+;       Function Name			:	int read_eeprom(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tEepromData)
+;       Function Description	:	Get EEPROM values from the MCU memory.
+;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]	- Sensors ID
+;									[Uss_Calib_Data_t *tEepromData]	- EEPROM data and VPROG_STATUS
+;       Return Values			:	0 = Success
+;									1 = Failure
+;		Description				:	Ex. read_eeprom(tSensorMask, &Buffer);
+******************************************************************************/
+int read_eeprom(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tEepromData)
+{
+	return (int)UssDrivers_EEPROM_Data_Get(tSensorMask, tEepromData);
 }
 //---------------------------------------------------------------------------//
 

@@ -3,7 +3,7 @@
 ;       Function	: Declare USS Drivers Function & Variable
 ;       Chip		: Infineon TC397
 ;       Clock		: Internal SYSPLL 300MHz
-;       Date		: 2024 / 1 / 4
+;       Date		: 2024 / 1 / 5
 ;       Author		: Fenderson Lu & Jim
 ******************************************************************************/
 #ifndef __USSDRIVERS_H__
@@ -22,6 +22,7 @@
 
 
 // CalibDataReadMask
+#define		MASK_R_VPROM_STATUS		0x1
 #define		MASK_R_F_DRV			0x00000000FFul
 #define		MASK_R_I_DRV			0x0000001F00ul
 #define		MASK_R_G_ANA			0x000000D000ul
@@ -29,6 +30,10 @@
 #define		MASK_R_CUSTOMER_BITS	0x003F800000ul
 #define		MASK_R_OSC_TRIM_L		0xC0000000ul
 #define		MASK_R_OSC_TRIM_H		0x03
+
+#define		MASK_R_EE_OSC_TRIM_L	0x10000000ul
+#define		MASK_R_EE_OSC_TRIM_H	0x07
+
 
 enum UssRxSymbolSignalLimit{
 	SYM_RX_T_BIT0_MIN = 93,
@@ -68,9 +73,9 @@ enum UssCmdsSize{
 	SIZE_THRES_THVAL = 12,
 	SIZE_CALIB_WRITE = 5,		// CW_BYTEx
 	SIZE_MEAS_WRITE = 5,
-	SIZE_USS_RX_RAW = 80,
+	SIZE_ISR_RX_RAW = 120,
 	SIZE_TIME_TAG = 60,
-	SIZE_USS_RX = 3,
+	SIZE_USS_RX = 4,
 	SIZE_SND_REC = 128
 };
 
@@ -93,7 +98,7 @@ enum UssCmdRxAckUint32Len{
 	ACK_U32_LEN_READ_STATUS = 1,
 	ACK_U32_LEN_READ_TEMP = 1,
 	ACK_U32_LEN_CALIB_READ = 2,		// EEPROM bits
-	ACK_U32_LEN_EE_READ = 2,			// EEPROM bits + VPROG_STATUS bit
+	ACK_U32_LEN_EE_READ = 4,		// EEPROM bits + VPROG_STATUS bit (35 bits), 35bits*3 = 105bits (need 4 bytes)
 	ACK_U32_LEN_READ_ID = 1
 };
 
@@ -133,7 +138,7 @@ enum Uss_Cmds_BitsAckLen{
 	ACK_BITS_LEN_READ_STATUS = 10,
 	ACK_BITS_LEN_READ_TEMP = 10,
 	ACK_BITS_LEN_CALIB_READ = 34,			// EEPROM bits
-	ACK_BITS_LEN_EE_READ = 35,				// EEPROM bits + VPROG_STATUS bit
+	ACK_BITS_LEN_EE_READ = 105,		// (EEPROM bits + VPROG_STATUS bit) = 35 bits *3 = 105
 	ACK_BITS_LEN_READ_ID = 24
 } ;
 
@@ -536,13 +541,13 @@ typedef struct
 
 typedef struct
 {
+	uint8 u8Vprog_Status;
 	uint8 u8Osc_Trim;
 	uint8 u8Customer_Bits;
 	uint8 u8G_Dig;
 	uint8 u8G_Ana;
 	uint8 u8I_Drv;
 	uint8 u8F_Drv;
-	uint8 u8Vprog_Status;
 } Uss_Calib_Data_t;
 
 typedef struct
@@ -565,13 +570,13 @@ typedef struct
 extern Uss_Thres_Data_t gtUssThresSetupPara[SIZE_USS_SENSOR];
 extern Uss_Meas_Data_t gtUssMeasData[SIZE_USS_SENSOR]; // 20231228 ADD BY KU
 extern Uss_Calib_Data_t gtUssCalibWritePara[SIZE_USS_SENSOR];
-extern uint32 gu32InvertHighPulseTemp[SIZE_USS_RX_RAW];
+extern uint32 gu32InvertHighPulseTemp[SIZE_ISR_RX_RAW];
 extern uint32 gu32TimeTagTemp[SIZE_TIME_TAG];
 extern Ifx_P *gtUssIoPort[SIZE_USS_SENSOR];
 extern uint8 gu8UssIoPin[SIZE_USS_SENSOR];
 extern Uss_Rx_Ack_Data_t gtUssRxAckData[SIZE_USS_SENSOR];
 #if EVB_DEMO
-extern uint32 gu32LowPulseTemp[SIZE_USS_RX_RAW];
+extern uint32 gu32LowPulseTemp[SIZE_ISR_RX_RAW];
 #endif
 //---------------------------- Declare Function -----------------------------// 
 extern void UssDrivers_Init(void);
@@ -609,6 +614,8 @@ extern Func_Status_t UssDrivers_Sensors_Temp_Read(Uss_Sensor_Id_t tSensorMask);
 extern Func_Status_t UssDrivers_Temperature_Get(Uss_Sensor_Id_t tSensorMask, uint16 *u16Temp);
 extern Func_Status_t UssDrivers_Sensors_Calib_Read(Uss_Sensor_Id_t tSensorMask);
 extern Func_Status_t UssDrivers_Calib_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibData);
+extern Func_Status_t UssDrivers_Sensors_EEPROM_Read(Uss_Sensor_Id_t tSensorMask);
+extern Func_Status_t UssDrivers_EEPROM_Data_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tEepromData);
 #endif
 
 
