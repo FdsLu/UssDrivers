@@ -3,7 +3,7 @@
 ;       Function	:	USS (Ultrasonic Sensor System) Function
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2024 / 1 / 5
+;       Date		:	2024 / 1 / 8
 ;       Author		:	Fenderson Lu & Jim
 ;       Describe	: 	USS_TX_1 = USS_IO_TX1 (P15.2)
 ;						USS_RX_1 = USS_IO_RX1 (P15.8)
@@ -1510,6 +1510,71 @@ Func_Status_t UssDrivers_EEPROM_Data_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_
 	(*tEepromData).u8Customer_Bits = (uint8)((gtUssRxAckData[tSensorMask].u32EeRead[0] & (MASK_R_CUSTOMER_BITS << 1)) >> SHIFT_BIT_24);
 	(*tEepromData).u8Osc_Trim = (uint8)(((gtUssRxAckData[tSensorMask].u32EeRead[0] & MASK_R_EE_OSC_TRIM_L) >> SHIFT_BIT_31) | 
 								((gtUssRxAckData[tSensorMask].u32EeRead[1] & MASK_R_EE_OSC_TRIM_H) << SHIFT_BIT_1));
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Meas_Setup_Read(Uss_Sensor_Id_t tSensorMask)
+{
+	// Sensor ACK need about 6ms    
+	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_READ_MEAS_SETUP);
+
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Meas_Setup_Get(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Data_t *tMeasPara) 
+{
+	(*tMeasPara).u8npulses_a = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[1] & MASK_READMEAS_B1_NPULSES_A) >> SHIFT_BIT_1);
+	(*tMeasPara).u8tmeas_a = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[1] & MASK_READMEAS_B1_TMEAS_A_H) |
+								((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_TMEAS_A_L) >> SHIFT_BIT_30));
+	(*tMeasPara).u8thresscale_a = (uint8)(((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_THRESSCALE_A) >> SHIFT_BIT_28));
+	(*tMeasPara).u8npulses_b = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_BO_NPULSES_B) >> SHIFT_BIT_25);
+	(*tMeasPara).u8tmeas_b = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_TMEAS_B) >> SHIFT_BIT_22);
+	(*tMeasPara).u8thresscale_b = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_THRESSCALE_B) >> SHIFT_BIT_20);
+	(*tMeasPara).u8npulses_c = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_BO_NPULSES_C) >> SHIFT_BIT_17);
+	(*tMeasPara).u8tmeas_c = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_TMEAS_C) >> SHIFT_BIT_14);
+	(*tMeasPara).u8thresscale_c = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_THRESSCALE_C) >> SHIFT_BIT_12);
+	(*tMeasPara).u8echo_deb = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_ECHO_DEB) >> SHIFT_BIT_11);
+	(*tMeasPara).u8rt_cfg = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_RT_CFG) >> SHIFT_BIT_10);
+	(*tMeasPara).u8nftg = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_NFTG) >> SHIFT_BIT_9);
+	(*tMeasPara).u8ftc = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_FTC) >> SHIFT_BIT_8);
+ 	(*tMeasPara).u8epd = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_EPD) >> SHIFT_BIT_7);
+	(*tMeasPara).u8stc_cfg = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_BO_STC_CFG) >> SHIFT_BIT_5);
+	(*tMeasPara).u8stc_start = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_STC_START) >> SHIFT_BIT_3);
+	(*tMeasPara).u8noise_cfg = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_NOISE_CFG) >> SHIFT_BIT_1);
+	(*tMeasPara).u8filter_cfg = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_FILTER_CFG));
+
+    return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Sensors_Thres_Read(Uss_Sensor_Id_t tSensorMask)		
+{
+	// Sensor ACK need about 16ms
+	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_READ_THRES_SETUP);	
+
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Thres_Para_Get(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresholdData)
+{
+	(*tThresholdData).u8Thval[NUM_THVAL_2] = (uint8)(gtUssRxAckData[tSensorMask].u32ReadThresSetup[2] & MASK_R_B2_THVAL_2);
+	(*tThresholdData).u8Thval[NUM_THVAL_3] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] & MASK_R_B1_THVAL_3) >> SHIFT_BIT_27);
+	(*tThresholdData).u8Thval[NUM_THVAL_4] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] & MASK_R_B1_THVAL_4) >> SHIFT_BIT_22);
+	(*tThresholdData).u8Thval[NUM_THVAL_5] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] & MASK_R_B1_THVAL_5) >> SHIFT_BIT_17);
+	(*tThresholdData).u8Thval[NUM_THVAL_6] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] & MASK_R_B1_THVAL_6) >> SHIFT_BIT_12);
+	(*tThresholdData).u8Thval[NUM_THVAL_7] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] & MASK_R_B1_THVAL_7) >> SHIFT_BIT_7);
+	(*tThresholdData).u8Thval[NUM_THVAL_8] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] & MASK_R_B1_THVAL_8) >> SHIFT_BIT_2);
+	(*tThresholdData).u8Thval[NUM_THVAL_9] = (uint8)(((gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] & MASK_R_B1_THVAL_9_H) << SHIFT_BIT_3) |
+												((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_THVAL_9_L) >> SHIFT_BIT_29));
+	(*tThresholdData).u8Thval[NUM_THVAL_10] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_THVAL_10) >> SHIFT_BIT_24);
+	(*tThresholdData).u8Thval[NUM_THVAL_11] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_THVAL_11) >> SHIFT_BIT_19);	
+	(*tThresholdData).u8Thval[NUM_THVAL_12] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_THVAL_12) >> SHIFT_BIT_14);
+	(*tThresholdData).u8Thval[NUM_THVAL_13] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_THVAL_13) >> SHIFT_BIT_9);
+	(*tThresholdData).u8Thsft_Cfg = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_THSFT_CFG) >> SHIFT_BIT_7);
+	(*tThresholdData).u8Atg_Cfg = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_ATG_CFG) >> SHIFT_BIT_5);
+	(*tThresholdData).u8Atg_Tau = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_ATG_TAU) >> SHIFT_BIT_3);
+	(*tThresholdData).u8Atg_Alpha = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_ATG_ALPHA) >> SHIFT_BIT_2);
+	(*tThresholdData).u8Thresscale_Rec = (uint8)(gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_THRESSCALE_REC);
+
 	return FUNC_SUCCESS;
 }
 //---------------------------------------------------------------------------//

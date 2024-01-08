@@ -3,7 +3,7 @@
 ;       Function	: Declare USS Drivers Function & Variable
 ;       Chip		: Infineon TC397
 ;       Clock		: Internal SYSPLL 300MHz
-;       Date		: 2024 / 1 / 5
+;       Date		: 2024 / 1 / 8
 ;       Author		: Fenderson Lu & Jim
 ******************************************************************************/
 #ifndef __USSDRIVERS_H__
@@ -12,14 +12,33 @@
 //---------------------------- Declare Constant -----------------------------//
 #define		TIME_GAP			0.96
 #define		INIT_PARITY_BITS	0x0000
-#define		UNIT_A_U8			8				// Bits
-#define		UNIT_A_U32			32
+#define		UNIT_A_U8			8				// 8 bits
+#define		UNIT_A_U32			32				// 32 bits
 #define		UNIT_U32			0xFFFFFFFF	
 #define     UNIT_U16            0xFFFF
 #define		REG_BIT_7			0x80
 #define		PARITY_BIT			0x01
 #define		ZERO_START			1
 
+// ThresDataReadMask
+#define		MASK_R_B2_THVAL_2			0x1F
+#define		MASK_R_B1_THVAL_3			0xF8000000ul
+#define		MASK_R_B1_THVAL_4			0x07C00000ul
+#define		MASK_R_B1_THVAL_5			0x003E0000ul
+#define		MASK_R_B1_THVAL_6			0x0001F000ul
+#define		MASK_R_B1_THVAL_7			0x00000F80ul
+#define		MASK_R_B1_THVAL_8			0x0000007Cul
+#define		MASK_R_B1_THVAL_9_H			0x00000003ul
+#define		MASK_R_B0_THVAL_9_L			0xE0000000ul
+#define		MASK_R_B0_THVAL_10			0x1F000000ul
+#define		MASK_R_B0_THVAL_11			0x00F80000ul
+#define		MASK_R_B0_THVAL_12			0x0007C000ul
+#define		MASK_R_B0_THVAL_13			0x00003E00ul
+#define		MASK_R_B0_THSFT_CFG			0x00000180ul
+#define		MASK_R_B0_ATG_CFG			0x00000060ul
+#define		MASK_R_B0_ATG_TAU			0x00000018ul
+#define		MASK_R_B0_ATG_ALPHA			0x00000004ul
+#define		MASK_R_B0_THRESSCALE_REC	0x00000003ul
 
 // CalibDataReadMask
 #define		MASK_R_VPROM_STATUS		0x1
@@ -30,10 +49,29 @@
 #define		MASK_R_CUSTOMER_BITS	0x003F800000ul
 #define		MASK_R_OSC_TRIM_L		0xC0000000ul
 #define		MASK_R_OSC_TRIM_H		0x03
-
 #define		MASK_R_EE_OSC_TRIM_L	0x10000000ul
 #define		MASK_R_EE_OSC_TRIM_H	0x07
 
+// MEASBitsReadMask
+#define		MASK_READMEAS_B1_NPULSES_A		0x0e
+#define		MASK_READMEAS_B1_TMEAS_A_H		0x01
+#define		MASK_READMEAS_B0_TMEAS_A_L		0xC0000000ul
+#define		MASK_READMEAS_B0_THRESSCALE_A	0x30000000ul
+#define		MASK_READMEAS_BO_NPULSES_B		0x0e000000ul
+#define		MASK_READMEAS_B0_TMEAS_B		0x01C00000ul
+#define		MASK_READMEAS_B0_THRESSCALE_B	0x00300000ul
+#define		MASK_READMEAS_BO_NPULSES_C		0x000E0000ul
+#define		MASK_READMEAS_B0_TMEAS_C		0x0001C000ul
+#define		MASK_READMEAS_B0_THRESSCALE_C	0x00003000ul
+#define		MASK_READMEAS_B0_ECHO_DEB		0x00000800ul
+#define		MASK_READMEAS_B0_RT_CFG			0x00000400ul
+#define		MASK_READMEAS_B0_NFTG			0x00000200ul
+#define		MASK_READMEAS_B0_FTC			0x00000100ul
+#define		MASK_READMEAS_B0_EPD			0x00000080ul
+#define		MASK_READMEAS_BO_STC_CFG		0x00000060ul
+#define		MASK_READMEAS_B0_STC_START		0x00000018ul
+#define		MASK_READMEAS_B0_NOISE_CFG		0x00000006ul
+#define		MASK_READMEAS_B0_FILTER_CFG		0x00000001ul
 
 enum UssRxSymbolSignalLimit{
 	SYM_RX_T_BIT0_MIN = 93,
@@ -331,8 +369,7 @@ enum MEASBitsMask{
 	MASK_MEAS_B4_THRESSCALE_A_H     = 0x01,
 	MASK_MEAS_B4_TMEAS_A            = 0x0E,
 	MASK_MEAS_B4_NPULSES_A          = 0X70
-}; // 20231228 ADD BY KU
-
+}; 
 //---------------- CALIB_WRITE Command --------------------//
 //  Bytes of transmitted data for 'CALIB_WRITE' command
 enum CalibWritePacketBytes{
@@ -568,7 +605,7 @@ typedef struct
 } Uss_Rx_Ack_Data_t;
 //--------------------------- Extern Support --------------------------------//
 extern Uss_Thres_Data_t gtUssThresSetupPara[SIZE_USS_SENSOR];
-extern Uss_Meas_Data_t gtUssMeasData[SIZE_USS_SENSOR]; // 20231228 ADD BY KU
+extern Uss_Meas_Data_t gtUssMeasData[SIZE_USS_SENSOR]; 
 extern Uss_Calib_Data_t gtUssCalibWritePara[SIZE_USS_SENSOR];
 extern uint32 gu32InvertHighPulseTemp[SIZE_ISR_RX_RAW];
 extern uint32 gu32TimeTagTemp[SIZE_TIME_TAG];
@@ -583,7 +620,11 @@ extern void UssDrivers_Init(void);
 extern void UssDrivers_IO_Symbol_Signal(Uss_Sensor_Id_t tSensorMask, uint8 u8Symbol);
 extern void UssDrivers_Cmds_Transmit(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8Cmd);
 extern Func_Status_t UssDrivers_ThresSetup_Para_Write(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresSetupPara);
+extern Func_Status_t UssDrivers_Sensors_Thres_Read(Uss_Sensor_Id_t tSensorMask);
+extern Func_Status_t UssDrivers_Thres_Para_Get(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresholdData);
 extern Func_Status_t UssDrivers_Meas_Para_Write(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Data_t *tThresSetupPara);
+extern Func_Status_t UssDrivers_Meas_Setup_Read(Uss_Sensor_Id_t tSensorMask);
+extern Func_Status_t UssDrivers_Meas_Setup_Get(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Data_t *tMeasPara);
 extern uint8 UssDrivers_ParityBit_Calculate(ParityChkMode_t tMode, uint32 u32Values);
 extern Func_Status_t UssDrivers_Calib_Write(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibWritePara);
 extern void UssDrivers_Rx_Data_Parse(boolean bFlag);

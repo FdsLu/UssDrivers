@@ -3,7 +3,7 @@
 ;       Function	:	APIs transfer to TT API format
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2024 / 1 / 5
+;       Date		:	2024 / 1 / 8
 ;       Author		:	Fenderson Lu & Jim
 ;		Description	:	
 ******************************************************************************/
@@ -24,6 +24,33 @@
 int write_threshold(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresSetupPara)
 {
 	return (int)UssDrivers_ThresSetup_Para_Write(tSensorMask, tThresSetupPara);
+}
+
+/******************************************************************************
+;       Function Name			:	int get_threshold(Uss_Sensor_Id_t tSensorMask)
+;       Function Description	:	Read sensors threshold setup parameters.
+;       Parameters				:	[Uss_Sensor_Id_t tSensorMask] - Sensors ID
+;       Return Values			:	0 = Success
+;									1 = Failure
+;		Description				:	Ex. get_threshold(USS_ID_IO2_TXRX_FLM)
+******************************************************************************/
+int get_threshold(Uss_Sensor_Id_t tSensorMask)
+{
+	return (int)UssDrivers_Sensors_Thres_Read(tSensorMask);
+}
+	 
+/******************************************************************************
+;       Function Name			:	int read_threshold(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresholdData)
+;       Function Description	:	Get threshold setup parameters from the MCU memory.
+;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]		- Sensors ID
+;									[Uss_Thres_Data_t *tThresholdData]	- Threshold setup paremeters
+;       Return Values			:	0 = Success
+;									1 = Failure
+;		Description				:	Ex. read_threshold(USS_ID_IO2_TXRX_FLM, &Buff)
+******************************************************************************/
+int read_threshold(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresholdData)
+{
+	return (int)UssDrivers_Thres_Para_Get(tSensorMask, tThresholdData);
 }
 
 /******************************************************************************
@@ -177,6 +204,33 @@ int get_eeprom(Uss_Sensor_Id_t tSensorMask)
 int read_eeprom(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tEepromData)
 {
 	return (int)UssDrivers_EEPROM_Data_Get(tSensorMask, tEepromData);
+}
+
+/******************************************************************************
+;       Function Name           :   int get_meas(Uss_Sensor_Id_t tSensorMask)
+;       Function Description    :	Read sensors meas setup parameters.
+;       Parameters              :   [Uss_Sensor_Id_t tSensorMask] - Sensors ID
+;       Return Values           :   0 = Success
+;                                   1 = Failure
+;       Description             :   get_meas(USS_ID_IO2_TXRX_FLM)
+******************************************************************************/
+int get_meas(Uss_Sensor_Id_t tSensorMask)
+{
+	return (int)UssDrivers_Meas_Setup_Read(tSensorMask);
+}
+
+/******************************************************************************
+;       Function Name           :   int read_meas(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Data_t *tMeasSetupPara)
+;       Function Description    :	Get meas setup parameters from the MCU memory.
+;       Parameters              :   [Uss_Sensor_Id_t tSensorMask]		- Sensors ID
+;                                   [Uss_Meas_Data_t *tMeasSetupPara]	- Get parameters from the MCU memory
+;       Return Values           :   0 = Success
+;                                   1 = Failure
+;       Description             :   read_meas(tSensorMask, &Buff)
+******************************************************************************/
+int read_meas(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Data_t *tMeasSetupPara)
+{
+    return (int)UssDrivers_Meas_Setup_Get(tSensorMask, tMeasSetupPara);
 }
 //---------------------------------------------------------------------------//
 
