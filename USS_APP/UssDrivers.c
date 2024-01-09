@@ -34,7 +34,7 @@ uint32 gu32UssRxAckLen;
 uint32 gu32DetectTimeLen;
 uint32 gu32TxFilterLen;
 uint32 gu32RxTagTCnt;
-boolean gbUssRxFinishFlag, gbUssRxAckEnFlag;
+boolean gbIsrRxFinishFlag, gbUssRxAckEnFlag;
 boolean gbAckRecFinishFlag = FALSE;
 
 Ifx_P *gtUssIoPort[SIZE_USS_SENSOR]={	portUSS_IO_TX1, portUSS_IO_TX2, portUSS_IO_TX3, portUSS_IO_TX4, portUSS_IO_TX5, 
@@ -952,7 +952,16 @@ Func_Status_t UssDrivers_Calib_Write(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data
 	return FUNC_SUCCESS;		
 }
 //---------------------------------------------------------------------------//
-Func_Status_t UssDrivers_Status_Read(Uss_Sensor_Id_t tSensorMask, uint16 *u16StatusData)
+Func_Status_t UssDrivers_Status_Read(Uss_Sensor_Id_t tSensorMask)
+{
+	// Sensor ACK need about 2ms
+	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_READ_STATUS);
+	Common_Delay(UNIT_MILLI, 2);	
+
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_Status_Data_Get(Uss_Sensor_Id_t tSensorMask, uint16 *u16StatusData)
 {
     Func_Status_t Status = FUNC_FAIL;
 	
@@ -1426,6 +1435,10 @@ Func_Status_t UssDrivers_SndRecEnv_Detect(Uss_Detect_Mode_t tMode, uint16 u16Sen
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Bilat_Get(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRecEnv tCmd, uint32 *u32BilateralT)
 {
+    Func_Status_t Status = FUNC_FAIL;
+	
+	if(gbAckRecFinishFlag == TRUE)
+	{
 	switch(tCmd)
 	{
 		case CMDS_SEND_A:
@@ -1460,7 +1473,15 @@ Func_Status_t UssDrivers_Bilat_Get(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRec
 		break;		
 	}
 	
-	return FUNC_SUCCESS;
+		gbAckRecFinishFlag = FALSE;
+		Status = FUNC_SUCCESS;
+	}
+	else
+	{
+		Status = FUNC_FAIL;
+	}	
+
+	return Status;
 }
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Sensors_Temp_Read(Uss_Sensor_Id_t tSensorMask)
@@ -1474,9 +1495,21 @@ Func_Status_t UssDrivers_Sensors_Temp_Read(Uss_Sensor_Id_t tSensorMask)
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Temperature_Get(Uss_Sensor_Id_t tSensorMask, uint16 *u16Temp)
 {
+    Func_Status_t Status = FUNC_FAIL;
+	
+	if(gbAckRecFinishFlag == TRUE)
+	{
 	*u16Temp = gtUssRxAckData[tSensorMask].u16ReadTemp;
 
-	return FUNC_SUCCESS;
+		gbAckRecFinishFlag = FALSE;
+		Status = FUNC_SUCCESS;
+	}
+	else
+	{
+		Status = FUNC_FAIL;
+	}	
+
+	return Status;
 }
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Sensors_Calib_Read(Uss_Sensor_Id_t tSensorMask)
@@ -1490,6 +1523,10 @@ Func_Status_t UssDrivers_Sensors_Calib_Read(Uss_Sensor_Id_t tSensorMask)
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Calib_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibData)
 {
+    Func_Status_t Status = FUNC_FAIL;
+	
+	if(gbAckRecFinishFlag == TRUE)
+	{
 	(*tCalibData).u8F_Drv = (uint8)(gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_F_DRV);
 	(*tCalibData).u8I_Drv = (uint8)((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_I_DRV) >> SHIFT_BIT_8);
 	(*tCalibData).u8G_Ana = (uint8)((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_G_ANA) >> SHIFT_BIT_13);
@@ -1498,7 +1535,15 @@ Func_Status_t UssDrivers_Calib_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t
 	(*tCalibData).u8Osc_Trim = (uint8)(((gtUssRxAckData[tSensorMask].u32CalibRead[0] & MASK_R_OSC_TRIM_L) >> SHIFT_BIT_30) | 
 								((gtUssRxAckData[tSensorMask].u32CalibRead[1] & MASK_R_OSC_TRIM_H) << SHIFT_BIT_2));
 	
-	return FUNC_SUCCESS;
+		gbAckRecFinishFlag = FALSE;
+		Status = FUNC_SUCCESS;
+	}
+	else
+	{
+		Status = FUNC_FAIL;
+	}	
+
+	return Status;
 }
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Sensors_EEPROM_Read(Uss_Sensor_Id_t tSensorMask)		
@@ -1512,6 +1557,10 @@ Func_Status_t UssDrivers_Sensors_EEPROM_Read(Uss_Sensor_Id_t tSensorMask)
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_EEPROM_Data_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tEepromData)
 {	
+    Func_Status_t Status = FUNC_FAIL;
+	
+	if(gbAckRecFinishFlag == TRUE)
+	{
 	// the third packets (EEPROM_data + VPROM_Bit)
 	(*tEepromData).u8Vprog_Status = (uint8)(gtUssRxAckData[tSensorMask].u32EeRead[0] & MASK_R_VPROM_STATUS);
 	(*tEepromData).u8F_Drv = (uint8)((gtUssRxAckData[tSensorMask].u32EeRead[0] & (MASK_R_F_DRV << 1)) >> SHIFT_BIT_1);
@@ -1521,7 +1570,16 @@ Func_Status_t UssDrivers_EEPROM_Data_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_
 	(*tEepromData).u8Customer_Bits = (uint8)((gtUssRxAckData[tSensorMask].u32EeRead[0] & (MASK_R_CUSTOMER_BITS << 1)) >> SHIFT_BIT_24);
 	(*tEepromData).u8Osc_Trim = (uint8)(((gtUssRxAckData[tSensorMask].u32EeRead[0] & MASK_R_EE_OSC_TRIM_L) >> SHIFT_BIT_31) | 
 								((gtUssRxAckData[tSensorMask].u32EeRead[1] & MASK_R_EE_OSC_TRIM_H) << SHIFT_BIT_1));
-	return FUNC_SUCCESS;
+		
+		gbAckRecFinishFlag = FALSE;
+		Status = FUNC_SUCCESS;
+	}
+	else
+	{
+		Status = FUNC_FAIL;
+	}	
+
+	return Status;
 }
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Meas_Setup_Read(Uss_Sensor_Id_t tSensorMask)
@@ -1535,6 +1593,10 @@ Func_Status_t UssDrivers_Meas_Setup_Read(Uss_Sensor_Id_t tSensorMask)
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Meas_Setup_Get(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Data_t *tMeasPara) 
 {
+    Func_Status_t Status = FUNC_FAIL;
+	
+	if(gbAckRecFinishFlag == TRUE)
+	{
 	(*tMeasPara).u8npulses_a = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[1] & MASK_READMEAS_B1_NPULSES_A) >> SHIFT_BIT_1);
 	(*tMeasPara).u8tmeas_a = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[1] & MASK_READMEAS_B1_TMEAS_A_H) |
 								((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_TMEAS_A_L) >> SHIFT_BIT_30));
@@ -1555,7 +1617,15 @@ Func_Status_t UssDrivers_Meas_Setup_Get(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Da
 	(*tMeasPara).u8noise_cfg = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_NOISE_CFG) >> SHIFT_BIT_1);
 	(*tMeasPara).u8filter_cfg = (uint8)((gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & MASK_READMEAS_B0_FILTER_CFG));
 
-    return FUNC_SUCCESS;
+		gbAckRecFinishFlag = FALSE;
+		Status = FUNC_SUCCESS;
+	}
+	else
+	{
+		Status = FUNC_FAIL;
+	}	
+
+	return Status;
 }
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Sensors_Thres_Read(Uss_Sensor_Id_t tSensorMask)		
@@ -1569,6 +1639,10 @@ Func_Status_t UssDrivers_Sensors_Thres_Read(Uss_Sensor_Id_t tSensorMask)
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Thres_Para_Get(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresholdData)
 {
+    Func_Status_t Status = FUNC_FAIL;
+	
+	if(gbAckRecFinishFlag == TRUE)
+	{
 	(*tThresholdData).u8Thval[NUM_THVAL_2] = (uint8)(gtUssRxAckData[tSensorMask].u32ReadThresSetup[2] & MASK_R_B2_THVAL_2);
 	(*tThresholdData).u8Thval[NUM_THVAL_3] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] & MASK_R_B1_THVAL_3) >> SHIFT_BIT_27);
 	(*tThresholdData).u8Thval[NUM_THVAL_4] = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] & MASK_R_B1_THVAL_4) >> SHIFT_BIT_22);
@@ -1588,7 +1662,15 @@ Func_Status_t UssDrivers_Thres_Para_Get(Uss_Sensor_Id_t tSensorMask, Uss_Thres_D
 	(*tThresholdData).u8Atg_Alpha = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_ATG_ALPHA) >> SHIFT_BIT_2);
 	(*tThresholdData).u8Thresscale_Rec = (uint8)(gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_THRESSCALE_REC);
 
-	return FUNC_SUCCESS;
+		gbAckRecFinishFlag = FALSE;
+		Status = FUNC_SUCCESS;
+	}
+	else
+	{
+		Status = FUNC_FAIL;
+	}	
+
+	return Status;
 }
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_EEPROM_Copy(Uss_Sensor_Id_t tSensorMask)
@@ -1608,6 +1690,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 				gtUssRxAckData[tSensorMask].u32SendAT[u32Index] = gu32TimeTagTemp[u32Index];
 			}
 			
+			gbAckRecFinishFlag = TRUE;
+			
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] SEND_A OK);				
 			#endif
@@ -1617,6 +1701,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			{
 				gtUssRxAckData[tSensorMask].u32ReceiveAT[u32Index] = gu32TimeTagTemp[u32Index];
 			}	
+			
+			gbAckRecFinishFlag = TRUE;
 			
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] RECEIVE_A OK);
@@ -1628,6 +1714,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 				gtUssRxAckData[tSensorMask].u32SendBT[u32Index] = gu32TimeTagTemp[u32Index];
 			}	
 			
+			gbAckRecFinishFlag = TRUE;
+			
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] SEND_B OK);
 			#endif
@@ -1637,6 +1725,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			{
 				gtUssRxAckData[tSensorMask].u32ReceiveBT[u32Index] = gu32TimeTagTemp[u32Index];
 			}	
+			
+			gbAckRecFinishFlag = TRUE;
 			
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] RECEIVE_B OK);
@@ -1648,6 +1738,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 				gtUssRxAckData[tSensorMask].u32SendCT[u32Index] = gu32TimeTagTemp[u32Index];
 			}	
 
+			gbAckRecFinishFlag = TRUE;
+
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] SEND_C OK);
 			#endif
@@ -1657,6 +1749,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			{
 				gtUssRxAckData[tSensorMask].u32ReceiveCT[u32Index] = gu32TimeTagTemp[u32Index];
 			}	
+
+			gbAckRecFinishFlag = TRUE;
 
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] RECEIVE_C OK);
@@ -1670,6 +1764,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] = (gtUssRxAckData[tSensorMask].u32ReadThresSetup[1] & (~UNIT_U32)) | gu32UssRxBitsTemp[1];	
 			gtUssRxAckData[tSensorMask].u32ReadThresSetup[2] = (gtUssRxAckData[tSensorMask].u32ReadThresSetup[2] & (~UNIT_U32)) | gu32UssRxBitsTemp[2]; 
 
+			gbAckRecFinishFlag = TRUE;
+
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] READ_THRES_SETUP OK);
 			#endif
@@ -1681,6 +1777,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] = (gtUssRxAckData[tSensorMask].u32ReadMeasSetup[0] & (~UNIT_U32)) | gu32UssRxBitsTemp[0];
 			gtUssRxAckData[tSensorMask].u32ReadMeasSetup[1] = (gtUssRxAckData[tSensorMask].u32ReadMeasSetup[1] & (~UNIT_U32)) | gu32UssRxBitsTemp[1];
 
+			gbAckRecFinishFlag = TRUE;
+
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] READ_MEAS_SETUP OK);
 			#endif
@@ -1688,6 +1786,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 		case EX_CMDS_READ_STATUS:
 			gtUssRxAckData[tSensorMask].u32ReadStatus = (gtUssRxAckData[tSensorMask].u32ReadStatus & (~UNIT_U32)) | gu32UssRxBitsTemp[0];
 
+			gbAckRecFinishFlag = TRUE;
+		
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] READ_STATUS OK);
 			#endif
@@ -1697,6 +1797,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 		break;
 		case EX_CMDS_READ_TEMP:
 			gtUssRxAckData[tSensorMask].u16ReadTemp = (gtUssRxAckData[tSensorMask].u16ReadTemp & (~UNIT_U16)) | (uint16)(gu32UssRxBitsTemp[0]);
+
+			gbAckRecFinishFlag = TRUE;
 
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] READ_TEMP OK);
@@ -1715,6 +1817,8 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			gtUssRxAckData[tSensorMask].u32CalibRead[0] = (gtUssRxAckData[tSensorMask].u32CalibRead[0] & (~UNIT_U32)) | gu32UssRxBitsTemp[0];
 			gtUssRxAckData[tSensorMask].u32CalibRead[1] = (gtUssRxAckData[tSensorMask].u32CalibRead[1] & (~UNIT_U32)) | gu32UssRxBitsTemp[1];
 
+			gbAckRecFinishFlag = TRUE;
+
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] CALIB_READ OK);
 			#endif
@@ -1728,12 +1832,16 @@ void UssDrivers_Rx_Data_Store(Uss_Sensor_Id_t tSensorMask, Uss_Exchange_Cmds u8C
 			gtUssRxAckData[tSensorMask].u32EeRead[2] = (gtUssRxAckData[tSensorMask].u32EeRead[2] & (~UNIT_U32)) | gu32UssRxBitsTemp[2];
 			gtUssRxAckData[tSensorMask].u32EeRead[3] = (gtUssRxAckData[tSensorMask].u32EeRead[3] & (~UNIT_U32)) | gu32UssRxBitsTemp[3];
 
+			gbAckRecFinishFlag = TRUE;
+
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] EE_READ OK);
 			#endif
 		break;
 		case EX_CMDS_READ_ID:
 			gtUssRxAckData[tSensorMask].u32ReadId = (gtUssRxAckData[tSensorMask].u32ReadId & (~UNIT_U32)) | gu32UssRxBitsTemp[0];
+
+			gbAckRecFinishFlag = TRUE;
 
 			#if DEBUG_UART
 				DEBUG_MSG([UssRx] READ_ID OK);
@@ -1823,7 +1931,7 @@ void UssDrivers_Rx_Data_Parse(boolean bFlag)
 			#endif
 		}		
 		
-		gbUssRxFinishFlag = FALSE;
+		gbIsrRxFinishFlag = FALSE;
 	}
 }
 //---------------------------------------------------------------------------//
@@ -1847,14 +1955,14 @@ void UssDrivers_UssRxAckEnFlag_Set(boolean bFlagSwitch)
 	gbUssRxAckEnFlag = bFlagSwitch;
 }
 //---------------------------------------------------------------------------//
-boolean UssDrivers_RxIsrFinishFlag_Get(void)
+boolean UssDrivers_IsrRxFinishFlag_Get(void)
 {
-	return gbUssRxFinishFlag;
+	return gbIsrRxFinishFlag;
 }
 //---------------------------------------------------------------------------//
-void UssDrivers_RxIsrFinishFlag_Set(boolean bFlagStatus)
+void UssDrivers_IsrRxFinishFlag_Set(boolean bFlagStatus)
 {
-	gbUssRxFinishFlag = bFlagStatus;
+	gbIsrRxFinishFlag = bFlagStatus;
 }
 //---------------------------------------------------------------------------//
 uint32 UssDrivers_RxAckLen_Get(void)

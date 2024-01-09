@@ -67,17 +67,30 @@ int write_calibration(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibWrite
 }
 
 /******************************************************************************
-;       Function Name			:	int read_status(Uss_Sensor_Id_t tSensorMask, uint16 *u16StatusData)
+;       Function Name			:	int get_status(Uss_Sensor_Id_t tSensorMask)
 ;       Function Description	:	Read sensors status
+;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]	- Sensors ID
+;       Return Values			:	0 = Success
+;									1 = Failure
+;		Description				:	Ex. get_status(USS_ID_IO2_TXRX_FLM)
+******************************************************************************/
+int get_status(Uss_Sensor_Id_t tSensorMask)
+{
+	return (int)UssDrivers_Status_Read(tSensorMask);
+}
+
+/******************************************************************************
+;       Function Name			:	int read_status(Uss_Sensor_Id_t tSensorMask, uint16 *u16StatusData)
+;       Function Description	:	Get sensors status from the MCU memory.
 ;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]	- Sensors ID
 ;									[uint16 *u16StatusData]			- USS status
 ;       Return Values			:	0 = Success
 ;									1 = Failure
-;		Description				:	Ex. read_status(USS_ID_IO1_TXRX_FLC, &u16Status)
+;		Description				:	Ex. read_status(USS_ID_IO1_TXRX_FLC, &Buff)
 ******************************************************************************/
 int read_status(Uss_Sensor_Id_t tSensorMask, uint16 *u16StatusData)
 {
-	return (int)UssDrivers_Status_Read(tSensorMask, u16StatusData);
+	return (int)UssDrivers_Status_Data_Get(tSensorMask, u16StatusData);
 }
 
 /******************************************************************************

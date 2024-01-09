@@ -3,7 +3,7 @@
 ;       Function	:	The Main Program
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2024 / 1 / 4
+;       Date		:	2024 / 1 / 9
 ;       Author		:	Fenderson Lu
 ******************************************************************************/
 //---------------------------- Include File ---------------------------------//
@@ -42,7 +42,7 @@ void core0_main(void)
 	while(1)
 	{		
 		Timer_Gpt12_VTOS();
-		UssDrivers_Rx_Data_Parse(UssDrivers_RxIsrFinishFlag_Get());
+		UssDrivers_Rx_Data_Parse(UssDrivers_IsrRxFinishFlag_Get());
 	}
 }
 //---------------------------------------------------------------------------//

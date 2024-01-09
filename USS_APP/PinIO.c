@@ -3,7 +3,7 @@
 ;       Function	: 	GPIO sensing
 ;       Chip		: 	Infineon TC397
 ;       Clock		: 	Internal SYSPLL 300MHz
-;       Date		: 	2024 / 1 / 4
+;       Date		: 	2024 / 1 / 9
 ;       Author		: 	Fenderson Lu
 ;       Describe	: 	ERU interrupt pins
 ;						(1) USS_IO_RX1 = 
@@ -33,7 +33,7 @@ void SCUERU_Int0_Handler(void)
 	if(Common_Debounce_Counter(&gu32PwrOnDebounceTime) == TRUE)
 	{
 	#endif
-		if((UssDrivers_RxIsrFinishFlag_Get() == FALSE) && (UssDrivers_UssRxAckEnFlag_Get() == TRUE))
+		if((UssDrivers_IsrRxFinishFlag_Get() == FALSE) && (UssDrivers_UssRxAckEnFlag_Get() == TRUE))
 		{
 			if((UssDrivers_UssTxCmd_Get() >= EX_CMDS_SEND_A) && (UssDrivers_UssTxCmd_Get() <= EX_CMDS_RECEIVE_C))
 			{
@@ -61,7 +61,7 @@ void SCUERU_Int0_Handler(void)
 					gu32TagStartT = 0;
 					gu32PreTagStartT = 0;
 					gu32StartTimeTag = MODE_ENABLE;
-					UssDrivers_RxIsrFinishFlag_Set(TRUE);
+					UssDrivers_IsrRxFinishFlag_Set(TRUE);
 				}	
 			}
 			else
@@ -89,7 +89,7 @@ void SCUERU_Int0_Handler(void)
 						else
 						{
 							gu32RxAckIndex = 0;
-							UssDrivers_RxIsrFinishFlag_Set(TRUE);
+							UssDrivers_IsrRxFinishFlag_Set(TRUE);
 						}
 						
 						u32LowTotalT = 0;
@@ -119,7 +119,7 @@ void SCUERU_Int0_Handler(void)
 						else
 						{
 							gu32RxAckIndex = 0;
-							UssDrivers_RxIsrFinishFlag_Set(TRUE);
+							UssDrivers_IsrRxFinishFlag_Set(TRUE);
 						}
 						
 						u32InvertHighTotalT = 0;

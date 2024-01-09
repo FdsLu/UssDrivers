@@ -17,6 +17,7 @@ extern int get_threshold(Uss_Sensor_Id_t tSensorMask);
 extern int read_threshold(Uss_Sensor_Id_t tSensorMask, Uss_Thres_Data_t *tThresholdData);
 extern int write_calibration(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibWritePara);
 extern int read_status(Uss_Sensor_Id_t tSensorMask, uint16 *u16StatusData);
+extern int get_status(Uss_Sensor_Id_t tSensorMask);
 extern int write_meas(Uss_Sensor_Id_t sensor_mask, Uss_Meas_Data_t *tMeasSetupPara);
 extern int get_meas(Uss_Sensor_Id_t tSensorMask);
 extern int read_meas(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Data_t *tMeasSetupPara);
