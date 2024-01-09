@@ -3,7 +3,7 @@
 ;       Function	:	USS (Ultrasonic Sensor System) Function
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2024 / 1 / 8
+;       Date		:	2024 / 1 / 9
 ;       Author		:	Fenderson Lu & Jim
 ;       Describe	: 	USS_TX_1 = USS_IO_TX1 (P15.2)
 ;						USS_RX_1 = USS_IO_RX1 (P15.8)
@@ -18,31 +18,24 @@
 #include "PinIO.h"
 #include "UssDrivers.h"
 //---------------------------- Declare Global Variable ----------------------//
+Uss_Exchange_Cmds gu8UssTxCmd;
+Uss_Sensor_Id_t tUssSensorId;
 Uss_Thres_Data_t gtUssThresSetupPara[SIZE_USS_SENSOR];
 Uss_Meas_Data_t gtUssMeasData[SIZE_USS_SENSOR];
 Uss_Calib_Data_t gtUssCalibWritePara[SIZE_USS_SENSOR];
 Uss_Rx_Ack_Data_t gtUssRxAckData[SIZE_USS_SENSOR];
-uint32 gu32UssRxAckLen;
-uint32 gu32DetectTimeLen;
-
+uint32 gu32UssRxBitsTemp[SIZE_USS_RX];
+uint32 gu32InvertHighPulseTemp[SIZE_ISR_RX_RAW];
+uint32 gu32TimeTagTemp[SIZE_TIME_TAG];
 uint8 gu8ThresSetupTxBuff[SIZE_THRES_SETUP];
 uint8 gu8MeasWriteTxBuff[SIZE_MEAS_WRITE];
 uint8 gu8CalibWriteTxBuff[SIZE_CALIB_WRITE];
-
-uint32 gu32InvertHighPulseTemp[SIZE_ISR_RX_RAW];
-
-uint32 gu32TimeTagTemp[SIZE_TIME_TAG];
-
+uint32 gu32UssRxAckLen;
+uint32 gu32DetectTimeLen;
 uint32 gu32TxFilterLen;
-uint32 gu32UssRxBitsTemp[SIZE_USS_RX];
+uint32 gu32RxTagTCnt;
 boolean gbUssRxFinishFlag, gbUssRxAckEnFlag;
 boolean gbAckRecFinishFlag = FALSE;
-uint32 gu32RxTagTCnt;
-
-
-Uss_Exchange_Cmds gu8UssTxCmd;
-Uss_Sensor_Id_t tUssSensorId;
-
 
 Ifx_P *gtUssIoPort[SIZE_USS_SENSOR]={	portUSS_IO_TX1, portUSS_IO_TX2, portUSS_IO_TX3, portUSS_IO_TX4, portUSS_IO_TX5, 
 										portUSS_IO_TX6, portUSS_IO_TX7, portUSS_IO_TX8, portUSS_IO_TX9, portUSS_IO_TX10,
@@ -117,6 +110,7 @@ void UssDrivers_Init(void)
 		gtUssThresSetupPara[u32SensorIndex].u8Thval[NUM_THVAL_11] = 0x00;
 		gtUssThresSetupPara[u32SensorIndex].u8Thval[NUM_THVAL_12] = 0x00;
 		gtUssThresSetupPara[u32SensorIndex].u8Thval[NUM_THVAL_13] = 0x00;
+
 /* USS_MEAS_DATA */
 		gtUssMeasData[u32SensorIndex].u8filter_cfg = 0x00;
 		gtUssMeasData[u32SensorIndex].u8noise_cfg = 0x02;
@@ -195,10 +189,13 @@ void UssDrivers_IO_Symbol_Signal(Uss_Sensor_Id_t tSensorMask, uint8 u8Symbol)
 		case IO_SYM_T_REC:
 			#if EVB_DEMO
 			IfxPort_setPinLow(gtUssIoPort[tSensorMask], gu8UssIoPin[tSensorMask]);
+			Common_Delay(UNIT_MICRO, (uint32)(SYM_TIME_T_REC * TIME_GAP));	
+			IfxPort_setPinHigh(gtUssIoPort[tSensorMask], gu8UssIoPin[tSensorMask]);
 			#else
 			IfxPort_setPinHigh(gtUssIoPort[tSensorMask], gu8UssIoPin[tSensorMask]);
+			Common_Delay(UNIT_MICRO, (uint32)(SYM_TIME_T_REC * TIME_GAP));	
+			IfxPort_setPinLow(gtUssIoPort[tSensorMask], gu8UssIoPin[tSensorMask]);
 			#endif
-			Common_Delay(UNIT_MICRO, (uint32)(SYM_TIME_T_REC * TIME_GAP));		
 		break;
 		case IO_SYM_T_MEAS:
 			#if EVB_DEMO
@@ -1390,22 +1387,31 @@ Func_Status_t UssDrivers_SndRecEnv_Detect(Uss_Detect_Mode_t tMode, uint16 u16Sen
 	switch(tMode)
 	{
 		case MODE_SEND_REC_A:
+			// Sensor ACK need about 17ms
 			UssDrivers_Cmds_SedRecEnv_Send(gu16SendMask, CMDS_SEND_A);
-			Common_Delay(UNIT_MILLI, 1);	
+			Common_Delay(UNIT_MILLI, 17);	
+
+			// Sensor ACK need about 17ms
 			UssDrivers_Cmds_SedRecEnv_Send(gu16RecMask, CMDS_REC_A);	
-			Common_Delay(UNIT_MILLI, 1);	
+			Common_Delay(UNIT_MILLI, 17);	
 		break;
 		case MODE_SEND_REC_B:
+			// Sensor ACK need about 11ms
 			UssDrivers_Cmds_SedRecEnv_Send(gu16SendMask, CMDS_SEND_B);
-			Common_Delay(UNIT_MILLI, 1);
+			Common_Delay(UNIT_MILLI, 11);
+
+			// Sensor ACK need about 11ms
 			UssDrivers_Cmds_SedRecEnv_Send(gu16RecMask, CMDS_REC_B);	
-			Common_Delay(UNIT_MILLI, 1);
+			Common_Delay(UNIT_MILLI, 11);
 		break;
 		case MODE_SEND_REC_C:
+			// Sensor ACK need about 37ms
 			UssDrivers_Cmds_SedRecEnv_Send(gu16SendMask, CMDS_SEND_C);
-			Common_Delay(UNIT_MILLI, 1);
+			Common_Delay(UNIT_MILLI, 37);
+
+			// Sensor ACK need about 37ms
 			UssDrivers_Cmds_SedRecEnv_Send(gu16RecMask, CMDS_REC_C);	
-			Common_Delay(UNIT_MILLI, 1);
+			Common_Delay(UNIT_MILLI, 37);
 		break;
 		case MODE_ENVELOPE:
 			UssDrivers_Cmds_SedRecEnv_Send(gu16SendMask, CMDS_ENVELOPE_SEND_A);
@@ -1459,7 +1465,9 @@ Func_Status_t UssDrivers_Bilat_Get(Uss_Sensor_Id_t tSensorMask, Uss_Cmds_SendRec
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Sensors_Temp_Read(Uss_Sensor_Id_t tSensorMask)
 {
-	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_READ_TEMP);	
+	// Sensor ACK need about 2ms
+	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_READ_TEMP);
+	Common_Delay(UNIT_MILLI, 2);
 
 	return FUNC_SUCCESS;
 }
@@ -1473,7 +1481,9 @@ Func_Status_t UssDrivers_Temperature_Get(Uss_Sensor_Id_t tSensorMask, uint16 *u1
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Sensors_Calib_Read(Uss_Sensor_Id_t tSensorMask)
 {
-	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_CALIB_READ);	
+	// Sensor ACK need about 6ms
+	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_CALIB_READ);
+	Common_Delay(UNIT_MILLI, 6);
 
 	return FUNC_SUCCESS;
 }
@@ -1495,6 +1505,7 @@ Func_Status_t UssDrivers_Sensors_EEPROM_Read(Uss_Sensor_Id_t tSensorMask)
 {
 	// Sensor ACK need about 16ms
 	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_EE_READ);	
+	Common_Delay(UNIT_MILLI, 16);
 
 	return FUNC_SUCCESS;
 }
@@ -1517,6 +1528,7 @@ Func_Status_t UssDrivers_Meas_Setup_Read(Uss_Sensor_Id_t tSensorMask)
 {
 	// Sensor ACK need about 6ms    
 	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_READ_MEAS_SETUP);
+	Common_Delay(UNIT_MILLI, 6);
 
 	return FUNC_SUCCESS;
 }
@@ -1548,8 +1560,9 @@ Func_Status_t UssDrivers_Meas_Setup_Get(Uss_Sensor_Id_t tSensorMask, Uss_Meas_Da
 //---------------------------------------------------------------------------//
 Func_Status_t UssDrivers_Sensors_Thres_Read(Uss_Sensor_Id_t tSensorMask)		
 {
-	// Sensor ACK need about 16ms
-	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_READ_THRES_SETUP);	
+	// Sensor ACK need about 11ms
+	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_READ_THRES_SETUP);
+	Common_Delay(UNIT_MILLI, 11);	
 
 	return FUNC_SUCCESS;
 }
@@ -1574,6 +1587,13 @@ Func_Status_t UssDrivers_Thres_Para_Get(Uss_Sensor_Id_t tSensorMask, Uss_Thres_D
 	(*tThresholdData).u8Atg_Tau = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_ATG_TAU) >> SHIFT_BIT_3);
 	(*tThresholdData).u8Atg_Alpha = (uint8)((gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_ATG_ALPHA) >> SHIFT_BIT_2);
 	(*tThresholdData).u8Thresscale_Rec = (uint8)(gtUssRxAckData[tSensorMask].u32ReadThresSetup[0] & MASK_R_B0_THRESSCALE_REC);
+
+	return FUNC_SUCCESS;
+}
+//---------------------------------------------------------------------------//
+Func_Status_t UssDrivers_EEPROM_Copy(Uss_Sensor_Id_t tSensorMask)
+{
+	UssDrivers_Cmds_Transmit(tSensorMask, EX_CMDS_EE_COPY);	
 
 	return FUNC_SUCCESS;
 }

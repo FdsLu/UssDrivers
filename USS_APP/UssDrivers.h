@@ -3,7 +3,7 @@
 ;       Function	: Declare USS Drivers Function & Variable
 ;       Chip		: Infineon TC397
 ;       Clock		: Internal SYSPLL 300MHz
-;       Date		: 2024 / 1 / 8
+;       Date		: 2024 / 1 / 9
 ;       Author		: Fenderson Lu & Jim
 ******************************************************************************/
 #ifndef __USSDRIVERS_H__
@@ -657,6 +657,7 @@ extern Func_Status_t UssDrivers_Sensors_Calib_Read(Uss_Sensor_Id_t tSensorMask);
 extern Func_Status_t UssDrivers_Calib_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tCalibData);
 extern Func_Status_t UssDrivers_Sensors_EEPROM_Read(Uss_Sensor_Id_t tSensorMask);
 extern Func_Status_t UssDrivers_EEPROM_Data_Get(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tEepromData);
+extern Func_Status_t UssDrivers_EEPROM_Copy(Uss_Sensor_Id_t tSensorMask);
 #endif
 
 

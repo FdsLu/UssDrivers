@@ -3,7 +3,7 @@
 ;       Function	:	APIs transfer to TT API format
 ;       Chip		:	Infineon TC397
 ;       Clock		:	Internal Clock 300MHz
-;       Date		:	2024 / 1 / 8
+;       Date		:	2024 / 1 / 9
 ;       Author		:	Fenderson Lu & Jim
 ;		Description	:	
 ******************************************************************************/
@@ -204,6 +204,19 @@ int get_eeprom(Uss_Sensor_Id_t tSensorMask)
 int read_eeprom(Uss_Sensor_Id_t tSensorMask, Uss_Calib_Data_t *tEepromData)
 {
 	return (int)UssDrivers_EEPROM_Data_Get(tSensorMask, tEepromData);
+}
+
+/******************************************************************************
+;       Function Name			:	int copy_eeprom(Uss_Sensor_Id_t tSensorMask)
+;       Function Description	:	The EEPROM cells are programmed with the current calibration register contents.
+;       Parameters				:	[Uss_Sensor_Id_t tSensorMask]	- Sensors ID
+;       Return Values			:	0 = Success
+;									1 = Failure
+;		Description				:	Ex. copy_eeprom(USS_ID_IO2_TXRX_FLM)
+******************************************************************************/
+int copy_eeprom(Uss_Sensor_Id_t tSensorMask)
+{
+	return (int)UssDrivers_EEPROM_Copy(tSensorMask);
 }
 
 /******************************************************************************

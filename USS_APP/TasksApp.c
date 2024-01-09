@@ -53,12 +53,15 @@ void TasksApp_3s(void)
 
 
 	#else
-	//UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_READ_STATUS);
+	//UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_RECEIVE_C);
 	//UssDrivers_SndRecEnv_Detect(MODE_SEND_REC_C, 0x0002, 0x0000, 37200);	//36ms
 	//UssDrivers_Sensors_Temp_Read(USS_ID_IO2_TXRX_FLM);
 	//UssDrivers_Cmds_Transmit(USS_ID_IO2_TXRX_FLM, EX_CMDS_READ_MEAS_SETUP);
 	//UssDrivers_Sensors_EEPROM_Read(USS_ID_IO2_TXRX_FLM);
-	UssDrivers_Sensors_Thres_Read(USS_ID_IO2_TXRX_FLM);
+	//UssDrivers_Sensors_Thres_Read(USS_ID_IO2_TXRX_FLM);
+	//UssDrivers_EEPROM_Copy(USS_ID_IO2_TXRX_FLM);
+	//UssDrivers_Sensors_Calib_Read(USS_ID_IO2_TXRX_FLM);
+
 
 	#endif
 }
